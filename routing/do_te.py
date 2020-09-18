@@ -1,11 +1,8 @@
 import os
 
-import numpy as np
-from joblib import delayed, Parallel
 from tqdm import tqdm
 
 from .heuristic import HeuristicSolver
-from .ls2sr import OneStepLocalSearch2SRSolver
 from .max_step_sr import MaxStepSRSolver
 from .multi_step_sr import MultiStepSRSolver
 from .oblivious_routing import ObliviousRoutingSolver
@@ -316,8 +313,6 @@ def do_te(c, tms, gt_tms, G, last_tm, nNodes=12, solver_type='pulp_coin', solver
 
         if solver_type == 'pulp_coin':
             max_step_solver = MaxStepSRSolver(G, segments)
-        elif solver_type == 'ls2sr':
-            max_step_solver = OneStepLocalSearch2SRSolver(G, segments, verbose=False)
         else:
             raise NotImplementedError('Solver not implemented!')
 
