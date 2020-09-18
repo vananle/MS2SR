@@ -21,7 +21,7 @@ def get_args():
 
     # Model
     # Graph
-    parser.add_argument('--model', type=str, default='lstm_max_invd')
+    parser.add_argument('--model', type=str, default='lstm')
     parser.add_argument('--seq_len_x', type=int, default=64, help='')
     parser.add_argument('--seq_len_y', type=int, default=12, help='')
 
