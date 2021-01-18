@@ -287,17 +287,17 @@ def load_dynamic_graphs(graphs, args):
     for dataset in ['train', 'val', 'test']:
 
         if args.adjtype == "scalap":
-            adj = [calculate_scaled_laplacian(adj_mx) for  adj_mx in graphs[dataset]]
+            adj = [calculate_scaled_laplacian(adj_mx) for adj_mx in graphs[dataset]]
         elif args.adjtype == "normlap":
-            adj = [calculate_normalized_laplacian(adj_mx).astype(np.float32).todense()]
+            adj = [calculate_normalized_laplacian(adj_mx).astype(np.float32).todense() for adj_mx in graphs[dataset]]
         elif args.adjtype == "symnadj":
-            adj = [sym_adj(adj_mx)]
+            adj = [sym_adj(adj_mx) for adj_mx in graphs[dataset]]
         elif args.adjtype == "transition":
-            adj = [asym_adj(adj_mx)]
+            adj = [asym_adj(adj_mx) for adj_mx in graphs[dataset]]
         elif args.adjtype == "doubletransition":
-            adj = [asym_adj(adj_mx), asym_adj(np.transpose(adj_mx))]
+            adj = [(asym_adj(adj_mx), asym_adj(np.transpose(adj_mx))) for adj_mx in graphs[dataset]]
         elif args.adjtype == "identity":
-            adj = [np.diag(np.ones(adj_mx.shape[0])).astype(np.float32)]
+            adj = [np.diag(np.ones(adj_mx.shape[0])).astype(np.float32) for adj_mx in graphs[dataset]]
         else:
             error = 0
             assert error, "adj type not defined"
