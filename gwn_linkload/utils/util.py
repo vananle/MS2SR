@@ -287,7 +287,7 @@ def make_graph_inputs(args, device):
         supports = [torch.tensor(i).to(device) for i in adj_mx]
         aptinit = None if args.randomadj else supports[0]  # ignored without do_graph_conv and add_apt_adj
     if args.aptonly:
-        if not args.addaptadj and args.do_graph_conv: raise ValueError(
-            'WARNING: not using adjacency matrix')
+        if not args.addaptadj and args.do_graph_conv:
+            raise ValueError('WARNING: not using adjacency matrix')
         supports = None
     return aptinit, supports
