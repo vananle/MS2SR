@@ -36,9 +36,11 @@ def main(args, **model_kwargs):
 
     train_loader, val_loader, test_loader, graphs = utils.get_dataloader(args)
 
-    args.train_size, args.nSeries = train_loader.dataset.X.shape
-    args.val_size = val_loader.dataset.X.shape[0]
-    args.test_size = test_loader.dataset.X.shape[0]
+    train_graphs, val_graphs, test_graphs = graphs
+
+    args.train_size, args.nSeries = train_loader.dataset.L.shape
+    args.val_size = val_loader.dataset.L.shape[0]
+    args.test_size = test_loader.dataset.L.shape[0]
 
     in_dim = 1
     if args.tod:
