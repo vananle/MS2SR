@@ -306,6 +306,7 @@ def load_dynamic_graphs(graphs, args):
 
     return supports
 
+
 def make_graph_inputs(args, device):
     aptinit = None
     if not args.aptonly:
