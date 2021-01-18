@@ -291,4 +291,4 @@ def get_dataloader(args):
                              batch_size=args.test_batch_size,
                              shuffle=False)
 
-    return train_loader, val_loader, test_loader, (train[2], val[2], test[2])
+    return train_loader, val_loader, test_loader, {'train': train[2], 'val': val[2], 'test': test[2]}
