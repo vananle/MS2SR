@@ -8,8 +8,7 @@ from tqdm import trange
 
 import models
 import utils
-from routing import *
-
+import routing
 sys.path.append('..')
 
 warnings.simplefilter("ignore")
@@ -129,7 +128,7 @@ def main(args, **model_kwargs):
         y_gt = y_gt.cpu().data.numpy()
         yhat = yhat.cpu().data.numpy()
 
-        run_te(x_gt, y_gt, yhat, args)
+        routing.run_te(x_gt, y_gt, yhat, args)
 
 
 if __name__ == "__main__":
