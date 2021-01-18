@@ -1,5 +1,6 @@
 import os
 import sys
+
 import time
 import warnings
 
@@ -8,8 +9,9 @@ from tqdm import trange
 
 import models
 import utils
-import routing
 sys.path.append('..')
+
+import routing
 
 warnings.simplefilter("ignore")
 warnings.filterwarnings("ignore", category=UserWarning)
