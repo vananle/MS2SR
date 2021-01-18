@@ -1,19 +1,18 @@
+import os
+import sys
 import time
-import time
-import sys, os
-
-sys.path.append('..')
+import models
+import torch
+import utils
+from tqdm import trange
 from routing import *
 
 import warnings
 
+sys.path.append('..')
+
 warnings.simplefilter("ignore")
 warnings.filterwarnings("ignore", category=UserWarning)
-import models
-import numpy as np
-import torch
-import utils
-from tqdm import trange
 
 
 def main(args, **model_kwargs):
