@@ -174,7 +174,7 @@ class GWNet(nn.Module):
             residual = x
             # dilated convolution
             filter = torch.tanh(self.filter_convs[i](residual))
-                gate = torch.sigmoid(self.gate_convs[i](residual))
+            gate = torch.sigmoid(self.gate_convs[i](residual))
             x = filter * gate
 
             if self.verbose:
