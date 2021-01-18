@@ -280,6 +280,29 @@ def make_pred_df(realy, yhat, scaler, seq_length):
     return df
 
 
+def load_dynamic_graphs(graphs, args):
+    # todo: finish this function
+    adjs = []
+
+    if args.adjtype == "scalap":
+        for graphs_subset in graphs:
+            adj = [calculate_scaled_laplacian(adj_mx) for  adj_mx in graphs_subset]
+            adjs.append(adj)
+    elif args.adjtype == "normlap":
+        adj = [calculate_normalized_laplacian(adj_mx).astype(np.float32).todense()]
+    elif args.adjtype == "symnadj":
+        adj = [sym_adj(adj_mx)]
+    elif args.adjtype == "transition":
+        adj = [asym_adj(adj_mx)]
+    elif args.adjtype == "doubletransition":
+        adj = [asym_adj(adj_mx), asym_adj(np.transpose(adj_mx))]
+    elif args.adjtype == "identity":
+        adj = [np.diag(np.ones(adj_mx.shape[0])).astype(np.float32)]
+    else:
+        error = 0
+        assert error, "adj type not defined"
+
+
 def make_graph_inputs(args, device):
     aptinit = None
     if not args.aptonly:

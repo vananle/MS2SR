@@ -67,7 +67,7 @@ class LinkLoadDataset(Dataset):
 
     def __init__(self, data, args, scaler=None):
 
-        X, L, A, alpha = data
+        L = data
 
         # save parameters
         self.args = args
@@ -78,7 +78,7 @@ class LinkLoadDataset(Dataset):
 
         # self.X = self.np2torch(X)
         self.L = self.np2torch(L)
-        self.A = self.np2torch(A)
+        # self.A = self.np2torch(A)
 
         self.n_timeslots, self.n_series = self.L.shape
 
@@ -269,26 +269,26 @@ def get_dataloader(args):
 
     X = X[:_size]
     L = L[:_size]
-    A = A[:_size]
+    graphs = A[:_size]
     alpha = alpha[:_size]
 
-    train, val, test = train_test_split(X, L, A, alpha)
+    train, val, test = train_test_split(X, L, graphs, alpha)
 
     # Training set
-    train_set = LinkLoadDataset(train, args=args, scaler=None)
+    train_set = LinkLoadDataset(train[1], args=args, scaler=None)
     train_loader = DataLoader(train_set,
                               batch_size=args.train_batch_size,
                               shuffle=True)
 
     # validation set
-    val_set = LinkLoadDataset(val, args=args, scaler=train_set.scaler)
+    val_set = LinkLoadDataset(val[1], args=args, scaler=train_set.scaler)
     val_loader = DataLoader(val_set,
                             batch_size=args.val_batch_size,
                             shuffle=False)
 
-    test_set = LinkLoadDataset(test, args=args, scaler=train_set.scaler)
+    test_set = LinkLoadDataset(test[1], args=args, scaler=train_set.scaler)
     test_loader = DataLoader(test_set,
                              batch_size=args.test_batch_size,
                              shuffle=False)
 
-    return train_loader, val_loader, test_loader, None
+    return train_loader, val_loader, test_loader, (train[2], val[2], test[2])
