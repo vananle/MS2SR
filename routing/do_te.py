@@ -67,22 +67,7 @@ def get_te_data(x_gt, y_gt, yhat, args):
     return x_gt, y_gt, yhat
 
 
-def run_te(x_gt, y_gt, yhat, args):
-    G = load_network_topology(args.dataset)
-
-    if not os.path.isfile('../../data/topo/{}_segments.npy'.format(args.dataset)):
-
-        segments = get_segments(G)
-        np.save('../../data/topo/{}_segments'.format(args.dataset), segments)
-    else:
-        segments = np.load('../../data/topo/{}_segments.npy'.format(args.dataset), allow_pickle=True)
-
-    x_gt, y_gt, yhat = get_te_data(x_gt, y_gt, yhat, args)
-
-    te_step = x_gt.shape[0]
-
-    print('    Method           |   Min     Avg    Max     std')
-
+def solve_oblivious_routing(yhat, y_gt, x_gt, G, segments, te_step, args):
     oblivious_solver = ObliviousRoutingSolver(G, segments)
     oblivious_solver.solve()
     print('Solving Obilious Routing: Done')
@@ -116,6 +101,8 @@ def run_te(x_gt, y_gt, yhat, args):
 
     save_results(args.log_dir, '{}_{}'.format(args.model, args.type), mlu_pred, route_changes_pred)
 
+
+def last_step_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     one_step_pred_results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
         c='last_step', tms=yhat[i], gt_tms=y_gt[i], G=G,
         last_tm=yhat[i][0], nNodes=args.nNodes) for i in range(te_step))
@@ -147,6 +134,8 @@ def run_te(x_gt, y_gt, yhat, args):
 
     save_results(args.log_dir, 'last_step', mlu_last_step, route_changes_last_step)
 
+
+def one_step_pred_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     one_step_pred_results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
         c='last_step', tms=yhat[i], gt_tms=y_gt[i], G=G,
         last_tm=yhat[i][0], nNodes=args.nNodes) for i in range(te_step))
@@ -179,6 +168,8 @@ def run_te(x_gt, y_gt, yhat, args):
 
     save_results(args.log_dir, 'last_step', mlu_last_step, route_changes_last_step)
 
+
+def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     results_optomal_p1 = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
         c='p1', tms=y_gt[i], gt_tms=y_gt[i], G=G,
         last_tm=np.max(x_gt[i], axis=0), nNodes=args.nNodes) for i in range(te_step))
@@ -207,7 +198,9 @@ def run_te(x_gt, y_gt, yhat, args):
 
     save_results(args.log_dir, 'p2_optimal', mlu_optimal_p2, route_changes_p2)
 
-    print('Heuristic solver')
+
+def ls2sr(yhat, y_gt, x_gt, G, segments, te_step, args):
+    print('ls2sr solver')
     results_pred_p2_heuristic = []
     solver_pred_p2_heuristic = HeuristicSolver(G, time_limit=1, verbose=args.verbose)
 
@@ -232,6 +225,8 @@ def run_te(x_gt, y_gt, yhat, args):
 
     save_results(args.log_dir, 'p2_heuristic', mlu_pred_p2_heuristic, route_changes_pred_p2_heuristic)
 
+
+def optimal_p3_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     t_prime = int(args.seq_len_y / args.trunk)
     results_optimal_p3 = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
         c='p3', tms=np.stack([np.max(y_gt[i][j:j + t_prime], axis=0) for j in range(0, y_gt[i].shape[0], t_prime)]),
@@ -248,6 +243,8 @@ def run_te(x_gt, y_gt, yhat, args):
 
     save_results(args.log_dir, 'p3_optimal', mlu_optimal_p3, route_changes_p3)
 
+
+def optimal_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     results_optimal = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
         c='optimal', tms=y_gt[i], gt_tms=y_gt[i], G=G,
         last_tm=np.max(x_gt[i], axis=0), nNodes=args.nNodes) for i in range(te_step))
@@ -262,6 +259,8 @@ def run_te(x_gt, y_gt, yhat, args):
                                                                             np.std(mlu_optimal)))
     save_results(args.log_dir, 'optimal_optimal', mlu_optimal, route_changes_opt)
 
+
+def ls2sr_p0_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('P0 Heuristic solver')
     solver_pred_p0_heuristic = HeuristicSolver(G, time_limit=10, verbose=args.verbose)
 
@@ -281,6 +280,24 @@ def run_te(x_gt, y_gt, yhat, args):
                                                                                np.std(mlu_pred_p0_heuristic)))
 
     save_results(args.log_dir, 'p0_heuristic', mlu_pred_p0_heuristic, route_changes_pred_p0_heuristic)
+
+
+def run_te(x_gt, y_gt, yhat, args):
+    G = load_network_topology(args.dataset)
+
+    if not os.path.isfile('../../data/topo/{}_segments.npy'.format(args.dataset)):
+
+        segments = get_segments(G)
+        np.save('../../data/topo/{}_segments'.format(args.dataset), segments)
+    else:
+        segments = np.load('../../data/topo/{}_segments.npy'.format(args.dataset), allow_pickle=True)
+
+    x_gt, y_gt, yhat = get_te_data(x_gt, y_gt, yhat, args)
+
+    te_step = x_gt.shape[0]
+    print('    Method           |   Min     Avg    Max     std')
+
+    ls2sr(yhat, y_gt, x_gt, G, segments, te_step, args)
 
 
 def do_te(c, tms, gt_tms, G, last_tm, nNodes=12, solver_type='pulp_coin', solver=None):
