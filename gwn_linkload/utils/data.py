@@ -182,10 +182,9 @@ class LinkLoadDataset(Dataset):
             adj_mx = np.mean(self.A[t:t + self.args.seq_len_x], axis=0)
             supports = load_adj(adj_mx=adj_mx, adjtype=self.args.adjtype)
             supports = [torch.tensor(i).to(self.args.device) for i in supports]
-
+            sample = {'x': x, 'y': y, 'x_gt': xgt, 'y_gt': y_gt, 'supports': supports}
         else:
-            supports = None
-        sample = {'x': x, 'y': y, 'x_gt': xgt, 'y_gt': y_gt, 'supports': supports}
+            sample = {'x': x, 'y': y, 'x_gt': xgt, 'y_gt': y_gt}
         return sample
 
     def transform(self, X):

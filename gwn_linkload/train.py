@@ -80,8 +80,10 @@ def main(args, **model_kwargs):
 
                     x = batch['x']  # [b, seq_x, n, f]
                     y = batch['y']  # [b, seq_y, n]
-                    dy_supports = batch['supports']
-
+                    if not args.apt_only:
+                        dy_supports = batch['supports']
+                    else:
+                        dy_supports = None
                     if y.max() == 0: continue
                     loss, rse, mae, mse, mape, rmse = engine.train(input=x, real_val=y, dy_supports=dy_supports)
                     train_loss.append(loss)
