@@ -152,22 +152,22 @@ class LinkLoadDataset(Dataset):
 
             y = y.reshape(1, -1)
 
-            if self.args.tod:
-                tod = self.tod[t:t + self.args.seq_len_x]
-                tod = tod.unsqueeze(dim=-1)  # [seq_x, n, 1]
-                x = torch.cat([x, tod], dim=-1)  # [seq_x, n, +1]
+            # if self.args.tod:
+            #     tod = self.tod[t:t + self.args.seq_len_x]
+            #     tod = tod.unsqueeze(dim=-1)  # [seq_x, n, 1]
+            #     x = torch.cat([x, tod], dim=-1)  # [seq_x, n, +1]
+            #
+            # if self.args.ma:
+            #     ma = self.ma[t:t + self.args.seq_len_x]
+            #     ma = ma.unsqueeze(dim=-1)  # [seq_x, n, 1]
+            #     x = torch.cat([x, ma], dim=-1)  # [seq_x, n, +1]
+            #
+            # if self.args.mx:
+            #     mx = self.mx[t:t + self.args.seq_len_x]
+            #     mx = mx.unsqueeze(dim=-1)  # [seq_x, n, 1]
+            #     x = torch.cat([x, mx], dim=-1)  # [seq_x, n, +1]
 
-            if self.args.ma:
-                ma = self.ma[t:t + self.args.seq_len_x]
-                ma = ma.unsqueeze(dim=-1)  # [seq_x, n, 1]
-                x = torch.cat([x, ma], dim=-1)  # [seq_x, n, +1]
-
-            if self.args.mx:
-                mx = self.mx[t:t + self.args.seq_len_x]
-                mx = mx.unsqueeze(dim=-1)  # [seq_x, n, 1]
-                x = torch.cat([x, mx], dim=-1)  # [seq_x, n, +1]
-
-        else:
+        else:  # type == p3
             t_prime = int(self.args.seq_len_y / self.trunk)
             y = [torch.max(self.L[t + self.args.seq_len_x + i:
                                   t + self.args.seq_len_x + i + t_prime], dim=0)[0]

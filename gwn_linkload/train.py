@@ -130,6 +130,10 @@ def main(args, **model_kwargs):
         y_gt = y_gt.cpu().data.numpy()
         yhat = yhat.cpu().data.numpy()
 
+        print('x_gt: ', x_gt.shape)
+        print('y_gt: ', y_gt.shape)
+        print('yhat: ', yhat.shape)
+
         routing.run_te(x_gt, y_gt, yhat, args)
 
 
