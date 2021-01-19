@@ -83,7 +83,7 @@ def main(args, **model_kwargs):
                     if not args.aptonly:
                         dy_supports = batch['supports']
                     else:
-                        dy_supports = None
+                        dy_supports = []
                     if y.max() == 0: continue
                     loss, rse, mae, mse, mape, rmse = engine.train(input=x, real_val=y, dy_supports=dy_supports)
                     train_loss.append(loss)
