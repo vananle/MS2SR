@@ -1,5 +1,8 @@
 import os
 import sys
+
+sys.path.append('..')
+
 import time
 import models
 import torch
@@ -9,7 +12,6 @@ from routing import *
 
 import warnings
 
-sys.path.append('..')
 
 warnings.simplefilter("ignore")
 warnings.filterwarnings("ignore", category=UserWarning)

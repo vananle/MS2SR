@@ -1,6 +1,8 @@
 import os
 import sys
 
+sys.path.append('..')
+import numpy as np
 import time
 import warnings
 
@@ -9,7 +11,6 @@ from tqdm import trange
 
 import models
 import utils
-sys.path.append('..')
 
 import routing
 
