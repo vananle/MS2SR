@@ -6,7 +6,7 @@ import torch
 from scipy.io import loadmat
 from torch.utils.data import Dataset, DataLoader
 
-import util
+from .util import load_adj
 
 
 class MinMaxScaler_torch():
@@ -179,7 +179,7 @@ class LinkLoadDataset(Dataset):
 
         # obtaining dynamic graph of the current period
         adj_mx = np.mean(self.A[t:t + self.args.seq_len_x], axis=0)
-        supports = util.load_adj(adj_mx=adj_mx, adjtype=self.args.adjtype)
+        supports = load_adj(adj_mx=adj_mx, adjtype=self.args.adjtype)
         supports = [torch.tensor(i).to(self.args.device) for i in supports]
 
         sample = {'x': x, 'y': y, 'x_gt': xgt, 'y_gt': y_gt, 'supports': supports}
