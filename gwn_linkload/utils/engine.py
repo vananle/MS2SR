@@ -5,7 +5,7 @@ from .metric import *
 
 
 class Trainer():
-    def __init__(self, model, scaler, lrate, wdecay, clip=3, lr_decay_rate=.97, lossfn='mae'):
+    def __init__(self, model, scaler, lrate, wdecay, clip=3, lr_decay_rate=.97, lossfn='mae', aptonly=False):
         self.model = model
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=lrate, weight_decay=wdecay)
@@ -25,10 +25,12 @@ class Trainer():
         else:
             raise ValueError('Loss fn not found!')
 
+        self.aptonly = aptonly
+
     @classmethod
     def from_args(cls, model, scaler, args):
         return cls(model, scaler, args.learning_rate, args.weight_decay, clip=args.clip,
-                   lr_decay_rate=args.lr_decay_rate, lossfn=args.loss_fn)
+                   lr_decay_rate=args.lr_decay_rate, lossfn=args.loss_fn, aptonly=args.aptonly)
 
     def train(self, input, real_val, dy_supports):
         self.model.train()
@@ -69,7 +71,7 @@ class Trainer():
         for _, batch in enumerate(test_loader):
             x = batch['x']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
-            if not self.args.aptonly:
+            if not self.aptonly:
                 dy_supports = batch['supports']
             else:
                 dy_supports = []
@@ -103,7 +105,7 @@ class Trainer():
         for _, batch in enumerate(val_loader):
             x = batch['x']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
-            if not self.args.aptonly:
+            if not self.aptonly:
                 dy_supports = batch['supports']
             else:
                 dy_supports = []
