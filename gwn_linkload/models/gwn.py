@@ -125,7 +125,7 @@ class GWNet(nn.Module):
         return nodevec1, nodevec2
 
     @classmethod
-    def from_args(cls, args, supports, aptinit, **kwargs):
+    def from_args(cls, args, aptinit, **kwargs):
         defaults = dict(dropout=args.dropout, adjtype=args.adjtype,
                         do_graph_conv=args.do_graph_conv, addaptadj=args.addaptadj, aptinit=aptinit,
                         in_dim=args.in_dim, apt_size=args.apt_size, out_seq_len=args.out_seq_len,
