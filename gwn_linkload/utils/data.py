@@ -1,10 +1,12 @@
 import os
-
 import pickle
+
 import numpy as np
 import torch
 from scipy.io import loadmat
 from torch.utils.data import Dataset, DataLoader
+
+import util
 
 
 class MinMaxScaler_torch():
@@ -65,9 +67,7 @@ class StandardScaler_torch():
 
 class LinkLoadDataset(Dataset):
 
-    def __init__(self, data, args, scaler=None):
-
-        L = data
+    def __init__(self, L, A, args, scaler=None):
 
         # save parameters
         self.args = args
@@ -78,7 +78,7 @@ class LinkLoadDataset(Dataset):
 
         # self.X = self.np2torch(X)
         self.L = self.np2torch(L)
-        # self.A = self.np2torch(A)
+        self.A = A
 
         self.n_timeslots, self.n_series = self.L.shape
 
@@ -177,7 +177,12 @@ class LinkLoadDataset(Dataset):
 
         y_gt = self.L[t + self.args.seq_len_x: t + self.args.seq_len_x + self.args.seq_len_y]
 
-        sample = {'x': x, 'y': y, 'x_gt': xgt, 'y_gt': y_gt}
+        # obtaining dynamic graph of the current period
+        adj_mx = np.mean(self.A[t:t + self.args.seq_len_x], axis=0)
+        supports = util.load_adj(adj_mx=adj_mx, adjtype=self.args.adjtype)
+        supports = [torch.tensor(i).to(self.args.device) for i in supports]
+
+        sample = {'x': x, 'y': y, 'x_gt': xgt, 'y_gt': y_gt, 'supports': supports}
         return sample
 
     def transform(self, X):
@@ -243,18 +248,21 @@ def train_test_split(X, L, A, alpha):
     train_size = int(X.shape[0] * 0.7)
     val_size = int(X.shape[0] * 0.1)
 
-    train_data = [X[:train_size], L[:train_size], A[:train_size], alpha[:train_size]]
+    train_data = {'X': X[:train_size], 'L': L[:train_size], 'A': A[:train_size], 'alpha': alpha[:train_size]}
 
-    val_data = [X[train_size:val_size + train_size], L[train_size:val_size + train_size],
-             A[train_size:val_size + train_size], alpha[train_size:val_size + train_size]]
+    val_data = {'X': X[train_size:val_size + train_size], 'L': L[train_size:val_size + train_size],
+                'A': A[train_size:val_size + train_size], 'alpha': alpha[train_size:val_size + train_size]}
 
-    test_data = [X[val_size + train_size:], L[val_size + train_size:], A[val_size + train_size:],
-              alpha[val_size + train_size:]]
+    test_data = {'X': X[val_size + train_size:], 'L': L[val_size + train_size:], 'A': A[val_size + train_size:],
+                 'alpha': alpha[val_size + train_size:]}
 
     return train_data, val_data, test_data
 
 
 def get_dataloader(args):
+    """
+    return dataloaders for train/val/test sets
+    """
     # loading data (linkload dataset and traffic matrices dataset)
     X, L, A, alpha = load_raw(args)
 
@@ -275,20 +283,20 @@ def get_dataloader(args):
     train, val, test = train_test_split(X, L, graphs, alpha)
 
     # Training set
-    train_set = LinkLoadDataset(train[1], args=args, scaler=None)
+    train_set = LinkLoadDataset(train['L'], train['A'], args=args, scaler=None)
     train_loader = DataLoader(train_set,
                               batch_size=args.train_batch_size,
                               shuffle=True)
 
     # validation set
-    val_set = LinkLoadDataset(val[1], args=args, scaler=train_set.scaler)
+    val_set = LinkLoadDataset(val['L'], val['A'], args=args, scaler=train_set.scaler)
     val_loader = DataLoader(val_set,
                             batch_size=args.val_batch_size,
                             shuffle=False)
 
-    test_set = LinkLoadDataset(test[1], args=args, scaler=train_set.scaler)
+    test_set = LinkLoadDataset(test['L'], test['A'], args=args, scaler=train_set.scaler)
     test_loader = DataLoader(test_set,
                              batch_size=args.test_batch_size,
                              shuffle=False)
 
-    return train_loader, val_loader, test_loader, {'train': train[2], 'val': val[2], 'test': test[2]}
+    return train_loader, val_loader, test_loader

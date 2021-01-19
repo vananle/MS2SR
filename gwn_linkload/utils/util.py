@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import torch
-from scipy.io import loadmat
 from scipy.sparse import linalg
 
 DEFAULT_DEVICE = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -172,14 +171,7 @@ def load_pickle(pickle_file):
 ADJ_CHOICES = ['scalap', 'normlap', 'symnadj', 'transition', 'identity']
 
 
-def load_adj(pkl_filename, adjtype):
-    if '.mat' in pkl_filename:
-        adj_mx = loadmat(pkl_filename)['A'].astype(np.float)
-        sensor_ids, sensor_id_to_ind = None, None
-    else:
-        sensor_ids, sensor_id_to_ind, adj_mx = load_pickle(pkl_filename)
-    # savemat('adj_mx.mat', mdict={'A': adj_mx})
-
+def load_adj(adj_mx, adjtype):
     if adjtype == "scalap":
         adj = [calculate_scaled_laplacian(adj_mx)]
     elif adjtype == "normlap":
@@ -195,7 +187,7 @@ def load_adj(pkl_filename, adjtype):
     else:
         error = 0
         assert error, "adj type not defined"
-    return sensor_ids, sensor_id_to_ind, adj
+    return adj
 
 
 def calc_metrics(preds, labels, null_val=0.):
@@ -279,47 +271,46 @@ def make_pred_df(realy, yhat, scaler, seq_length):
                            yhat_3=_to_ser(scaler.inverse_transform(yhat[:, :, 2]))))
     return df
 
+# def load_dynamic_graphs(graphs, args):
+#     # todo: finish this function
+#     """
+#     return: support (adjaency matrices)
+#             {'train': train_supports, 'val': val_supports, 'test': test_supports}
+#     """
+#     supports = {}
+#
+#     for dataset in ['train', 'val', 'test']:
+#
+#         if args.adjtype == "scalap":
+#             adj = [calculate_scaled_laplacian(adj_mx) for adj_mx in graphs[dataset]]
+#         elif args.adjtype == "normlap":
+#             adj = [calculate_normalized_laplacian(adj_mx).astype(np.float32).todense() for adj_mx in graphs[dataset]]
+#         elif args.adjtype == "symnadj":
+#             adj = [sym_adj(adj_mx) for adj_mx in graphs[dataset]]
+#         elif args.adjtype == "transition":
+#             adj = [asym_adj(adj_mx) for adj_mx in graphs[dataset]]
+#         elif args.adjtype == "doubletransition":
+#             adj = [(asym_adj(adj_mx), asym_adj(np.transpose(adj_mx))) for adj_mx in graphs[dataset]]
+#         elif args.adjtype == "identity":
+#             adj = [np.diag(np.ones(adj_mx.shape[0])).astype(np.float32) for adj_mx in graphs[dataset]]
+#         else:
+#             error = 0
+#             assert error, "adj type not defined"
+#
+#         supports[dataset] = adj
+#
+#     return supports
 
-def load_dynamic_graphs(graphs, args):
-    # todo: finish this function
-    """
-    return: support (adjaency matrices)
-            {'train': train_supports, 'val': val_supports, 'test': test_supports}
-    """
-    supports = {}
 
-    for dataset in ['train', 'val', 'test']:
-
-        if args.adjtype == "scalap":
-            adj = [calculate_scaled_laplacian(adj_mx) for adj_mx in graphs[dataset]]
-        elif args.adjtype == "normlap":
-            adj = [calculate_normalized_laplacian(adj_mx).astype(np.float32).todense() for adj_mx in graphs[dataset]]
-        elif args.adjtype == "symnadj":
-            adj = [sym_adj(adj_mx) for adj_mx in graphs[dataset]]
-        elif args.adjtype == "transition":
-            adj = [asym_adj(adj_mx) for adj_mx in graphs[dataset]]
-        elif args.adjtype == "doubletransition":
-            adj = [(asym_adj(adj_mx), asym_adj(np.transpose(adj_mx))) for adj_mx in graphs[dataset]]
-        elif args.adjtype == "identity":
-            adj = [np.diag(np.ones(adj_mx.shape[0])).astype(np.float32) for adj_mx in graphs[dataset]]
-        else:
-            error = 0
-            assert error, "adj type not defined"
-
-        supports[dataset] = adj
-
-    return supports
-
-
-def make_graph_inputs(graphs, args):
-    aptinit = None
-    if not args.aptonly:
-        supports = load_dynamic_graphs(graphs, args)
-        for dataset in ['train', 'val', 'test']:
-            supports[dataset] = [torch.tensor(i).to(args.device) for i in supports[dataset]]
-        aptinit = None if args.randomadj else supports[0]  # ignored without do_graph_conv and add_apt_adj
-    if args.aptonly:
-        if not args.addaptadj and args.do_graph_conv:
-            raise ValueError('WARNING: not using adjacency matrix')
-        supports = None
-    return aptinit, supports
+# def make_graph_inputs(graphs, args):
+#     aptinit = None
+#     if not args.aptonly:
+#         supports = load_dynamic_graphs(graphs, args)
+#         for dataset in ['train', 'val', 'test']:
+#             supports[dataset] = [torch.tensor(i).to(args.device) for i in supports[dataset]]
+#         aptinit = None if args.randomadj else supports[0]  # ignored without do_graph_conv and add_apt_adj
+#     if args.aptonly:
+#         if not args.addaptadj and args.do_graph_conv:
+#             raise ValueError('WARNING: not using adjacency matrix')
+#         supports = None
+#     return aptinit, supports

@@ -52,7 +52,7 @@ def get_supports_len(adjtype):
 
 
 class GWNet(nn.Module):
-    def __init__(self, device, num_nodes, dropout=0.3, supports=None, adjtype=None,
+    def __init__(self, device, num_nodes, dropout=0.3, adjtype=None,
                  do_graph_conv=True, addaptadj=True, aptinit=None, in_dim=2, out_seq_len=12,
                  residual_channels=32, dilation_channels=32, cat_feat_gc=False,
                  skip_channels=256, end_channels=512, kernel_size=2, blocks=4, layers=2, stride=2,
@@ -78,12 +78,9 @@ class GWNet(nn.Module):
                                         out_channels=residual_channels,
                                         kernel_size=(1, 1))
 
-        self.fixed_supports = supports or []
         receptive_field = 1
 
-        self.supports_len = len(self.fixed_supports)
-        if self.supports_len >= 1:
-            self.supports_len = get_supports_len(adjtype)
+        self.supports_len = get_supports_len(adjtype)
 
         if do_graph_conv and addaptadj:
             if aptinit is None:
@@ -129,7 +126,7 @@ class GWNet(nn.Module):
 
     @classmethod
     def from_args(cls, args, supports, aptinit, **kwargs):
-        defaults = dict(dropout=args.dropout, supports=supports, adjtype=args.adjtype,
+        defaults = dict(dropout=args.dropout, adjtype=args.adjtype,
                         do_graph_conv=args.do_graph_conv, addaptadj=args.addaptadj, aptinit=aptinit,
                         in_dim=args.in_dim, apt_size=args.apt_size, out_seq_len=args.out_seq_len,
                         residual_channels=args.hidden, dilation_channels=args.hidden,
@@ -151,7 +148,7 @@ class GWNet(nn.Module):
         cur_state_dict[wk][:w.shape[0]] = w
         self.load_state_dict(cur_state_dict)
 
-    def forward(self, x):
+    def forward(self, x, dynamic_support):
 
         # input x (b, seq_x, n, features)
         x = x.transpose(1, 3)
@@ -177,11 +174,11 @@ class GWNet(nn.Module):
             print('After first linear: ', x.shape)
 
         skip = 0
-        adjacency_matrices = self.fixed_supports
+        adjacency_matrices = dynamic_support
         # calculate the current adaptive adj matrix once per iteration
         if self.addaptadj:  # equation (6) and (7)
             adp = F.softmax(F.relu(torch.mm(self.nodevec1, self.nodevec2)), dim=1)  # the learnable adj matrix
-            adjacency_matrices = self.fixed_supports + [adp]
+            adjacency_matrices = dynamic_support + [adp]
             if self.verbose:
                 for adj in adjacency_matrices:
                     print('adj shape', adj.shape)

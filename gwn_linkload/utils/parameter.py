@@ -24,7 +24,7 @@ def get_args():
     parser.add_argument('--model', type=str, default='gwn')
     parser.add_argument('--adjdata', type=str, default='../../data/data/sensor_graph/adj_mx.pkl',
                         help='adj data path')
-    parser.add_argument('--adjtype', type=str, default='transition', help='adj type', choices=ADJ_CHOICES)
+    parser.add_argument('--adjtype', type=str, default='doubletransition', help='adj type', choices=ADJ_CHOICES)
     parser.add_argument('--do_graph_conv', action='store_true',
                         help='whether to add graph convolution layer')
     parser.add_argument('--aptonly', action='store_true', help='whether only adaptive adj')

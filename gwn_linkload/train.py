@@ -36,7 +36,7 @@ def main(args, **model_kwargs):
     else:
         raise ValueError('Dataset not found!')
 
-    train_loader, val_loader, test_loader, graphs = utils.get_dataloader(args)
+    train_loader, val_loader, test_loader = utils.get_dataloader(args)
 
     args.train_size, args.nSeries = train_loader.dataset.L.shape
     args.val_size = val_loader.dataset.L.shape[0]
@@ -52,9 +52,7 @@ def main(args, **model_kwargs):
 
     args.in_dim = in_dim
 
-    aptinit, supports = utils.make_graph_inputs(graphs, args)
-
-    model = models.GWNet.from_args(args, supports, aptinit, **model_kwargs)
+    model = models.GWNet.from_args(args, None, **model_kwargs)
     model.to(device)
     logger = utils.Logger(args)
 
@@ -82,9 +80,10 @@ def main(args, **model_kwargs):
 
                     x = batch['x']  # [b, seq_x, n, f]
                     y = batch['y']  # [b, seq_y, n]
+                    dy_supports = batch['supports']
 
                     if y.max() == 0: continue
-                    loss, rse, mae, mse, mape, rmse = engine.train(x, y)
+                    loss, rse, mae, mse, mape, rmse = engine.train(input=x, real_val=y, dy_supports=dy_supports)
                     train_loss.append(loss)
                     train_rse.append(rse)
                     train_mae.append(mae)

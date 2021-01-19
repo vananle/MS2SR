@@ -30,12 +30,12 @@ class Trainer():
         return cls(model, scaler, args.learning_rate, args.weight_decay, clip=args.clip,
                    lr_decay_rate=args.lr_decay_rate, lossfn=args.loss_fn)
 
-    def train(self, input, real_val):
+    def train(self, input, real_val, dy_supports):
         self.model.train()
         self.optimizer.zero_grad()
         # input = torch.nn.functional.pad(input, (1, 0, 0, 0))
 
-        output = self.model(input)  # now, output = [bs, seq_y, n]
+        output = self.model(input, dy_supports)  # now, output = [bs, seq_y, n]
         predict = self.scaler.inverse_transform(output)
 
         loss = self.lossfn(predict, real_val)
@@ -47,10 +47,10 @@ class Trainer():
         self.optimizer.step()
         return loss.item(), rse.item(), mae.item(), mse.item(), mape.item(), rmse.item()
 
-    def _eval(self, input, real_val):
+    def _eval(self, input, real_val, dy_supports):
         self.model.eval()
 
-        output = self.model(input)  # now, output = [bs, seq_y, n]
+        output = self.model(input, dy_supports)  # now, output = [bs, seq_y, n]
 
         predict = self.scaler.inverse_transform(output)
 
@@ -69,8 +69,9 @@ class Trainer():
         for _, batch in enumerate(test_loader):
             x = batch['x']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
+            dy_supports = batch['supports']
 
-            preds = model(x)
+            preds = model(x, dy_supports)
             preds = self.scaler.inverse_transform(preds)  # [bs, seq_y, n]
             outputs.append(preds)
             y_real.append(y)
@@ -99,8 +100,9 @@ class Trainer():
         for _, batch in enumerate(val_loader):
             x = batch['x']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
+            dy_supports = batch['supports']
 
-            metrics = self._eval(x, y)
+            metrics = self._eval(x, y, dy_supports)
             val_loss.append(metrics[0])
             val_rse.append(metrics[1])
             val_mae.append(metrics[2])
