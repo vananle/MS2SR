@@ -52,7 +52,7 @@ def get_supports_len(adjtype):
 
 
 class GWNet(nn.Module):
-    def __init__(self, device, num_nodes, dropout=0.3, adjtype=None,
+    def __init__(self, device, num_nodes, dropout=0.3, adjtype=None, aptonly=False,
                  do_graph_conv=True, addaptadj=True, aptinit=None, in_dim=2, out_seq_len=12,
                  residual_channels=32, dilation_channels=32, cat_feat_gc=False,
                  skip_channels=256, end_channels=512, kernel_size=2, blocks=4, layers=2, stride=2,
@@ -80,7 +80,10 @@ class GWNet(nn.Module):
 
         receptive_field = 1
 
-        self.supports_len = get_supports_len(adjtype)
+        if aptonly:
+            self.supports_len = 0
+        else:
+            self.supports_len = get_supports_len(adjtype)
 
         if do_graph_conv and addaptadj:
             if aptinit is None:
@@ -126,7 +129,7 @@ class GWNet(nn.Module):
 
     @classmethod
     def from_args(cls, args, aptinit, **kwargs):
-        defaults = dict(dropout=args.dropout, adjtype=args.adjtype,
+        defaults = dict(dropout=args.dropout, adjtype=args.adjtype, aptonly=args.aptonly,
                         do_graph_conv=args.do_graph_conv, addaptadj=args.addaptadj, aptinit=aptinit,
                         in_dim=args.in_dim, apt_size=args.apt_size, out_seq_len=args.out_seq_len,
                         residual_channels=args.hidden, dilation_channels=args.hidden,
