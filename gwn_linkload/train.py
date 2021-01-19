@@ -37,8 +37,6 @@ def main(args, **model_kwargs):
 
     train_loader, val_loader, test_loader, graphs = utils.get_dataloader(args)
 
-    train_graphs, val_graphs, test_graphs = graphs
-
     args.train_size, args.nSeries = train_loader.dataset.L.shape
     args.val_size = val_loader.dataset.L.shape[0]
     args.test_size = test_loader.dataset.L.shape[0]
@@ -53,7 +51,7 @@ def main(args, **model_kwargs):
 
     args.in_dim = in_dim
 
-    aptinit, supports = utils.make_graph_inputs(args, device)
+    aptinit, supports = utils.make_graph_inputs(graphs, args)
 
     model = models.GWNet.from_args(args, supports, aptinit, **model_kwargs)
     model.to(device)

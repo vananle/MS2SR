@@ -33,9 +33,27 @@ class GraphConvNet(nn.Module):
         return h
 
 
+def get_supports_len(adjtype):
+    if adjtype == "scalap":
+        return 1
+    elif adjtype == "normlap":
+        return 1
+    elif adjtype == "symnadj":
+        return 1
+    elif adjtype == "transition":
+        return 1
+    elif adjtype == "doubletransition":
+        return 2
+    elif adjtype == "identity":
+        return 1
+    else:
+        error = 0
+        assert error, "adj type not defined"
+
+
 class GWNet(nn.Module):
-    def __init__(self, device, num_nodes, dropout=0.3, supports=None, do_graph_conv=True,
-                 addaptadj=True, aptinit=None, in_dim=2, out_seq_len=12,
+    def __init__(self, device, num_nodes, dropout=0.3, supports=None, adjtype=None,
+                 do_graph_conv=True, addaptadj=True, aptinit=None, in_dim=2, out_seq_len=12,
                  residual_channels=32, dilation_channels=32, cat_feat_gc=False,
                  skip_channels=256, end_channels=512, kernel_size=2, blocks=4, layers=2, stride=2,
                  apt_size=10, verbose=0):
@@ -64,6 +82,9 @@ class GWNet(nn.Module):
         receptive_field = 1
 
         self.supports_len = len(self.fixed_supports)
+        if self.supports_len >= 1:
+            self.supports_len = get_supports_len(adjtype)
+
         if do_graph_conv and addaptadj:
             if aptinit is None:
                 nodevecs = torch.randn(num_nodes, apt_size), torch.randn(apt_size, num_nodes)
@@ -108,7 +129,7 @@ class GWNet(nn.Module):
 
     @classmethod
     def from_args(cls, args, supports, aptinit, **kwargs):
-        defaults = dict(dropout=args.dropout, supports=supports,
+        defaults = dict(dropout=args.dropout, supports=supports, adjtype=args.adjtype,
                         do_graph_conv=args.do_graph_conv, addaptadj=args.addaptadj, aptinit=aptinit,
                         in_dim=args.in_dim, apt_size=args.apt_size, out_seq_len=args.out_seq_len,
                         residual_channels=args.hidden, dilation_channels=args.hidden,

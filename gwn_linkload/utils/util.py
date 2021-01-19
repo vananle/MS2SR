@@ -282,6 +282,10 @@ def make_pred_df(realy, yhat, scaler, seq_length):
 
 def load_dynamic_graphs(graphs, args):
     # todo: finish this function
+    """
+    return: support (adjaency matrices)
+            {'train': train_supports, 'val': val_supports, 'test': test_supports}
+    """
     supports = {}
 
     for dataset in ['train', 'val', 'test']:
@@ -307,11 +311,12 @@ def load_dynamic_graphs(graphs, args):
     return supports
 
 
-def make_graph_inputs(args, device):
+def make_graph_inputs(graphs, args):
     aptinit = None
     if not args.aptonly:
-        sensor_ids, sensor_id_to_ind, adj_mx = load_adj(args.adjdata, args.adjtype)
-        supports = [torch.tensor(i).to(device) for i in adj_mx]
+        supports = load_dynamic_graphs(graphs, args)
+        for dataset in ['train', 'val', 'test']:
+            supports[dataset] = [torch.tensor(i).to(args.device) for i in supports[dataset]]
         aptinit = None if args.randomadj else supports[0]  # ignored without do_graph_conv and add_apt_adj
     if args.aptonly:
         if not args.addaptadj and args.do_graph_conv:
