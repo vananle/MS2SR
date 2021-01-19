@@ -69,7 +69,10 @@ class Trainer():
         for _, batch in enumerate(test_loader):
             x = batch['x']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
-            dy_supports = batch['supports']
+            if not self.args.aptonly:
+                dy_supports = batch['supports']
+            else:
+                dy_supports = []
 
             preds = model(x, dy_supports)
             preds = self.scaler.inverse_transform(preds)  # [bs, seq_y, n]
@@ -100,7 +103,10 @@ class Trainer():
         for _, batch in enumerate(val_loader):
             x = batch['x']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
-            dy_supports = batch['supports']
+            if not self.args.aptonly:
+                dy_supports = batch['supports']
+            else:
+                dy_supports = []
 
             metrics = self._eval(x, y, dy_supports)
             val_loss.append(metrics[0])
