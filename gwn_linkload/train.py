@@ -51,8 +51,8 @@ def main(args, **model_kwargs):
         in_dim += 1
 
     args.in_dim = in_dim
-
-    model = models.GWNet.from_args(args, None, **model_kwargs)
+    aptinit = None
+    model = models.GWNet.from_args(args, aptinit, **model_kwargs)
     model.to(device)
     logger = utils.Logger(args)
 
