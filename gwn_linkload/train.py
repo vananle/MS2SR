@@ -80,7 +80,7 @@ def main(args, **model_kwargs):
 
                     x = batch['x']  # [b, seq_x, n, f]
                     y = batch['y']  # [b, seq_y, n]
-                    if not args.apt_only:
+                    if not args.aptonly:
                         dy_supports = batch['supports']
                     else:
                         dy_supports = None
