@@ -201,29 +201,29 @@ def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
 
 def ls2sr(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('ls2sr solver')
-    results_pred_p2_heuristic = []
-    solver_pred_p2_heuristic = HeuristicSolver(G, time_limit=1, verbose=args.verbose)
+    results = []
+    solver = HeuristicSolver(G, time_limit=1, verbose=args.verbose)
 
     solution = None
     for i in tqdm(range(te_step)):
-        u, solution = p2_heuristic_solver(solver_pred_p2_heuristic, tm=yhat[i],
+        u, solution = p2_heuristic_solver(solver, tm=yhat[i],
                                           gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
 
-        results_pred_p2_heuristic.append((u, solution))
+        results.append((u, solution))
 
-    mlu_pred_p2_heuristic, solution_pred_p2_heuristic = extract_results(results_pred_p2_heuristic)
-    route_changes_pred_p2_heuristic = get_route_changes_heuristic(solution_pred_p2_heuristic)
+    mlu, solution = extract_results(results)
+    route_changes = get_route_changes_heuristic(solution)
     print(
-        'Route changes: Avg {:.3f} std {:.3f}'.format(np.sum(route_changes_pred_p2_heuristic) /
-                                                      (args.seq_len_y * route_changes_pred_p2_heuristic.shape[0]),
-                                                      np.std(route_changes_pred_p2_heuristic)))
+        'Route changes: Avg {:.3f} std {:.3f}'.format(np.sum(route_changes) /
+                                                      (args.seq_len_y * route_changes.shape[0]),
+                                                      np.std(route_changes)))
     print('P2 Heuristic    {}      | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(args.model,
-                                                                               np.min(mlu_pred_p2_heuristic),
-                                                                               np.mean(mlu_pred_p2_heuristic),
-                                                                               np.max(mlu_pred_p2_heuristic),
-                                                                               np.std(mlu_pred_p2_heuristic)))
+                                                                               np.min(mlu),
+                                                                               np.mean(mlu),
+                                                                               np.max(mlu),
+                                                                               np.std(mlu)))
 
-    save_results(args.log_dir, 'p2_heuristic', mlu_pred_p2_heuristic, route_changes_pred_p2_heuristic)
+    save_results(args.log_dir, 'p2_heuristic', mlu, route_changes)
 
 
 def optimal_p3_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
