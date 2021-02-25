@@ -74,10 +74,10 @@ def get_args():
     # parameter for test_routing
     parser.add_argument('--run_te', action='store_true')
 
-    parser.add_argument('--test_routing', type=str, default='sr',
-                        choices=['sr', 'sp', 'or', 'ta'])
-    parser.add_argument('--mon_policy', type=str, default='random',
-                        choices=['heavy_hitter', 'fluctuation', 'fgg', 'random'])
+    # parser.add_argument('--test_routing', type=str, default='sr',
+    #                     choices=['sr', 'sp', 'or', 'ta'])
+    # parser.add_argument('--mon_policy', type=str, default='random',
+    #                     choices=['heavy_hitter', 'fluctuation', 'fgg', 'random'])
     parser.add_argument('--te_step', type=int, default=0)
 
     # get args
