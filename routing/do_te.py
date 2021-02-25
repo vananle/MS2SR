@@ -206,9 +206,13 @@ def ls2sr(yhat, y_gt, x_gt, G, segments, te_step, args):
 
     solution = None
     for i in tqdm(range(te_step)):
+        mean = np.mean(y_gt[i], axis=1)
+        std_mean = np.std(mean)
+        var = np.var(y_gt[i], axis=1)
+        std_var = np.std(var)
         u, solution = p2_heuristic_solver(solver, tm=yhat[i],
                                           gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
-
+        print(std_mean, ' ', std_var, ' ', u)
         results.append((u, solution))
 
     mlu, solution = extract_results(results)
