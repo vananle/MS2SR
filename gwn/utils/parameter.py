@@ -10,10 +10,12 @@ def get_args():
     # parameter for dataset
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--dataset', type=str, default='abilene_tm',
-                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'sinet_sys_tm'])
+                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'sinet_sys_tm'],
+                        help='Dataset, (default abilene_tm)')
     parser.add_argument('--datapath', type=str, default='../../data')
-    parser.add_argument('--type', type=str, default='p1', choices=['p1', 'p2', 'p3'])
-    parser.add_argument('--trunk', type=int, default=3)
+    parser.add_argument('--type', type=str, default='p1', choices=['p1', 'p2', 'p3'],
+                        help='problem formulation (default p1)')
+    parser.add_argument('--trunk', type=int, default=3, help='trunk for p3 problem (default 3)')
 
     parser.add_argument('--tod', action='store_true')
     parser.add_argument('--ma', action='store_true')
@@ -24,20 +26,21 @@ def get_args():
     parser.add_argument('--model', type=str, default='gwn')
     parser.add_argument('--adjdata', type=str, default='../../data/data/sensor_graph/adj_mx.pkl',
                         help='adj data path')
-    parser.add_argument('--adjtype', type=str, default='doubletransition', help='adj type', choices=ADJ_CHOICES)
+    parser.add_argument('--adjtype', type=str, default='doubletransition', help='adj type (default doubletransition)',
+                        choices=ADJ_CHOICES)
     parser.add_argument('--do_graph_conv', action='store_true',
                         help='whether to add graph convolution layer')
     parser.add_argument('--aptonly', action='store_true', help='whether only adaptive adj')
     parser.add_argument('--addaptadj', action='store_true', help='whether add adaptive adj')
     parser.add_argument('--randomadj', action='store_true',
                         help='whether random initialize adaptive adj')
-    parser.add_argument('--apt_size', default=10, type=int)
+    parser.add_argument('--apt_size', default=10, type=int, help='default 10')
 
     # Wavenet
-    parser.add_argument('--seq_len_x', type=int, default=64, help='')
-    parser.add_argument('--seq_len_y', type=int, default=12, help='')
+    parser.add_argument('--seq_len_x', type=int, default=64, help='input length default 64')
+    parser.add_argument('--seq_len_y', type=int, default=12, help='routing cycle 12')
 
-    parser.add_argument('--dilation_channels', type=int, default=32, help='inputs dimension')
+    parser.add_argument('--dilation_channels', type=int, default=32, help='inputs dimension (default 32)')
     parser.add_argument('--residual_channels', type=int, default=32, help='inputs dimension')
     parser.add_argument('--skip_channels', type=int, default=256, help='inputs dimension')
     parser.add_argument('--end_channels', type=int, default=512, help='inputs dimension')
