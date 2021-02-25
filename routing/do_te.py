@@ -1,6 +1,6 @@
 import os
 
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 from .heuristic import HeuristicSolver
 from .max_step_sr import MaxStepSRSolver
@@ -205,14 +205,15 @@ def ls2sr(yhat, y_gt, x_gt, G, segments, te_step, args):
     solver = HeuristicSolver(G, time_limit=1, verbose=args.verbose)
 
     solution = None
-    for i in tqdm(range(te_step)):
+    iterator = trange(te_step)
+    for i in iterator:
         mean = np.mean(y_gt[i], axis=1)
         std_mean = np.std(mean)
         var = np.var(y_gt[i], axis=1)
         std_var = np.std(var)
         u, solution = p2_heuristic_solver(solver, tm=yhat[i],
                                           gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
-        print(std_mean, ' ', std_var, ' ', np.mean(u))
+        iterator.set_description('{} {} {}'.format(std_mean, std_var, np.mean(u)))
         results.append((u, solution))
 
     mlu, solution = extract_results(results)
