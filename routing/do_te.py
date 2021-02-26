@@ -206,9 +206,9 @@ def ls2sr(yhat, y_gt, x_gt, G, segments, te_step, args):
 
     solution = None
     for i in range(te_step):
-        mean = np.mean(y_gt[i], axis=1)
+        mean = np.mean(y_gt[i] / 1000000, axis=1)
         std_mean = np.std(mean)
-        std = np.std(y_gt[i], axis=1)
+        std = np.std(y_gt[i] / 1000000, axis=1)
         std_std = np.std(std)
 
         u, solution = p2_heuristic_solver(solver, tm=yhat[i],
