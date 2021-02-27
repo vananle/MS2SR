@@ -182,7 +182,7 @@ def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
 
         tms[:] = tms[:] * (1.0 - np.eye(args.nNodes))
         gt_tms[:] = gt_tms[:] * (1.0 - np.eye(args.nNodes))
-        u, solution = multi_step_sr(multi_step_solver, tms, gt_tms)
+        return multi_step_sr(multi_step_solver, tms, gt_tms)
 
     results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(
         tms=np.max(y_gt[i], axis=0, keepdims=True), gt_tms=y_gt[i]) for i in range(te_step))
