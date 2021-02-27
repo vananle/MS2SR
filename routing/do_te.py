@@ -170,11 +170,10 @@ def one_step_pred_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
 
 
 def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
-    multi_step_solver = MultiStepSRSolver(G, segments)
-    results = []
 
-    for i in range(te_step):
-        tms = y_gt[i], gt_tms = y_gt[i]
+    multi_step_solver = MultiStepSRSolver(G, segments)
+
+    def f(gt_tms, tms):
         tms = tms.reshape((-1, args.nNodes, args.nNodes))
         gt_tms = gt_tms.reshape((-1, args.nNodes, args.nNodes))
 
@@ -184,7 +183,9 @@ def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
         tms[:] = tms[:] * (1.0 - np.eye(args.nNodes))
         gt_tms[:] = gt_tms[:] * (1.0 - np.eye(args.nNodes))
         u, solution = multi_step_sr(multi_step_solver, tms, gt_tms)
-        results.append((u, solution))
+
+    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(
+        tms=np.max(y_gt[i], axis=0, keepdims=True), gt_tms=y_gt[i]) for i in range(te_step))
 
     mlu_optimal_p1, solution_optimal_p1 = extract_results(results)
     route_changes_p1 = get_route_changes(solution_optimal_p1, G)
