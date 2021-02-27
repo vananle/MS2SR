@@ -11,6 +11,12 @@ from .util import *
 from .util_h import count_routing_change
 
 
+def calculate_lamda(y_gt):
+    sum_max = np.sum(np.max(y_gt, axis=1))
+    maxmax = np.max(y_gt)
+    return sum_max / maxmax
+
+
 def get_route_changes(routings, G):
     route_changes = np.zeros(shape=(routings.shape[0] - 1))
     for t in range(routings.shape[0] - 1):
@@ -218,15 +224,19 @@ def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
     solver = HeuristicSolver(G, time_limit=1, verbose=args.verbose)
 
     solution = None
+    dynamicity = np.zeros(shape=(te_step, 5))
     for i in range(te_step):
-        mean = np.mean(y_gt[i] / 1000000, axis=1)
+        mean = np.mean(y_gt[i], axis=1)
         std_mean = np.std(mean)
-        std = np.std(y_gt[i] / 1000000, axis=1)
+        std = np.std(y_gt[i], axis=1)
         std_std = np.std(std)
+
+        theo_lamda = calculate_lamda(y_gt=y_gt[i])
 
         u, solution = p2_heuristic_solver(solver, tm=yhat[i],
                                           gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
-        print(np.sum(y_gt[i] / 1000000), ' ', std_mean, ' ', std_std, ' ', np.mean(u))
+        print(np.sum(y_gt[i]), ' ', std_mean, ' ', std_std, ' ', np.mean(u), ' ', theo_lamda)
+        dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.mean(u), theo_lamda]
         results.append((u, solution))
 
     mlu, solution = extract_results(results)
@@ -241,7 +251,8 @@ def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
                                                                                np.max(mlu),
                                                                                np.std(mlu)))
 
-    save_results(args.log_dir, 'p2_heuristic', mlu, route_changes)
+    save_results(args.log_dir, 'ls2sr_p2', mlu, route_changes)
+    np.save(os.path.join(args.log_dir, 'ls2sr_p2_dyn'), dynamicity)
 
 
 def optimal_p3_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
@@ -332,10 +343,7 @@ def do_te(c, tms, gt_tms, G, last_tm, nNodes=12, solver_type='pulp_coin', solver
 
     segments = get_segments(G)
 
-    if c == 'p1':
-        multi_step_solver = MultiStepSRSolver(G, segments)
-        return multi_step_sr(multi_step_solver, tms, gt_tms)
-    elif c == 'p3':
+    if c == 'p3':
         mms_solver = MultiStepSRSolver(G, segments)
         return mms_sr(mms_solver, tms, gt_tms)
     elif c == 'last_step':
