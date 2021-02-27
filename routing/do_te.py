@@ -170,11 +170,23 @@ def one_step_pred_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
 
 
 def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
-    results_optomal_p1 = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
-        c='p1', tms=y_gt[i], gt_tms=y_gt[i], G=G,
-        last_tm=np.max(x_gt[i], axis=0), nNodes=args.nNodes) for i in range(te_step))
+    multi_step_solver = MultiStepSRSolver(G, segments)
+    results = []
 
-    mlu_optimal_p1, solution_optimal_p1 = extract_results(results_optomal_p1)
+    for i in range(te_step):
+        tms = y_gt[i], gt_tms = y_gt[i]
+        tms = tms.reshape((-1, args.nNodes, args.nNodes))
+        gt_tms = gt_tms.reshape((-1, args.nNodes, args.nNodes))
+
+        tms[tms <= 0.0] = 0.0
+        gt_tms[gt_tms <= 0.0] = 0.0
+
+        tms[:] = tms[:] * (1.0 - np.eye(args.nNodes))
+        gt_tms[:] = gt_tms[:] * (1.0 - np.eye(args.nNodes))
+        u, solution = multi_step_sr(multi_step_solver, tms, gt_tms)
+        results.append((u, solution))
+
+    mlu_optimal_p1, solution_optimal_p1 = extract_results(results)
     route_changes_p1 = get_route_changes(solution_optimal_p1, G)
     print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(route_changes_p1), np.std(route_changes_p1)))
     print('P1                   | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu_optimal_p1),
@@ -184,22 +196,22 @@ def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
 
     save_results(args.log_dir, 'p1_optimal', mlu_optimal_p1, route_changes_p1)
 
-    results_optimal_p2 = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
-        c='p2', tms=np.max(y_gt[i], axis=0, keepdims=True), gt_tms=y_gt[i], G=G,
-        last_tm=np.max(x_gt[i], axis=0, keepdims=True), nNodes=args.nNodes) for i in range(te_step))
+    # results_optimal_p2 = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
+    #     c='p2', tms=np.max(y_gt[i], axis=0, keepdims=True), gt_tms=y_gt[i], G=G,
+    #     last_tm=np.max(x_gt[i], axis=0, keepdims=True), nNodes=args.nNodes) for i in range(te_step))
+    #
+    # mlu_optimal_p2, solution_optimal_p2 = extract_results(results_optimal_p2)
+    # route_changes_p2 = get_route_changes(solution_optimal_p2, G)
+    # print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(route_changes_p2), np.std(route_changes_p2)))
+    # print('P2                   | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu_optimal_p2),
+    #                                                                         np.mean(mlu_optimal_p2),
+    #                                                                         np.max(mlu_optimal_p2),
+    #                                                                         np.std(mlu_optimal_p2)))
+    #
+    # save_results(args.log_dir, 'p2_optimal', mlu_optimal_p2, route_changes_p2)
 
-    mlu_optimal_p2, solution_optimal_p2 = extract_results(results_optimal_p2)
-    route_changes_p2 = get_route_changes(solution_optimal_p2, G)
-    print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(route_changes_p2), np.std(route_changes_p2)))
-    print('P2                   | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu_optimal_p2),
-                                                                            np.mean(mlu_optimal_p2),
-                                                                            np.max(mlu_optimal_p2),
-                                                                            np.std(mlu_optimal_p2)))
 
-    save_results(args.log_dir, 'p2_optimal', mlu_optimal_p2, route_changes_p2)
-
-
-def ls2sr(yhat, y_gt, x_gt, G, segments, te_step, args):
+def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('ls2sr solver')
     results = []
     solver = HeuristicSolver(G, time_limit=1, verbose=args.verbose)
@@ -249,7 +261,7 @@ def optimal_p3_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'p3_optimal', mlu_optimal_p3, route_changes_p3)
 
 
-def optimal_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def optimal_p0_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     results_optimal = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
         c='optimal', tms=y_gt[i], gt_tms=y_gt[i], G=G,
         last_tm=np.max(x_gt[i], axis=0), nNodes=args.nNodes) for i in range(te_step))
@@ -265,7 +277,7 @@ def optimal_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'optimal_optimal', mlu_optimal, route_changes_opt)
 
 
-def ls2sr_p0_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('P0 Heuristic solver')
     solver_pred_p0_heuristic = HeuristicSolver(G, time_limit=10, verbose=args.verbose)
 
@@ -302,7 +314,7 @@ def run_te(x_gt, y_gt, yhat, args):
     te_step = x_gt.shape[0]
     print('    Method           |   Min     Avg    Max     std')
 
-    ls2sr(yhat, y_gt, x_gt, G, segments, te_step, args)
+    ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args)
 
 
 def do_te(c, tms, gt_tms, G, last_tm, nNodes=12, solver_type='pulp_coin', solver=None):
