@@ -203,19 +203,21 @@ def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
 
     save_results(args.log_dir, 'p1_optimal', mlu_optimal_p1, route_changes_p1)
 
-    # results_optimal_p2 = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
-    #     c='p2', tms=np.max(y_gt[i], axis=0, keepdims=True), gt_tms=y_gt[i], G=G,
-    #     last_tm=np.max(x_gt[i], axis=0, keepdims=True), nNodes=args.nNodes) for i in range(te_step))
-    #
-    # mlu_optimal_p2, solution_optimal_p2 = extract_results(results_optimal_p2)
-    # route_changes_p2 = get_route_changes(solution_optimal_p2, G)
-    # print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(route_changes_p2), np.std(route_changes_p2)))
-    # print('P2                   | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu_optimal_p2),
-    #                                                                         np.mean(mlu_optimal_p2),
-    #                                                                         np.max(mlu_optimal_p2),
-    #                                                                         np.std(mlu_optimal_p2)))
-    #
-    # save_results(args.log_dir, 'p2_optimal', mlu_optimal_p2, route_changes_p2)
+
+def optimal_p2_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+    results_optimal_p2 = Parallel(n_jobs=os.cpu_count() - 4)(delayed(do_te)(
+        c='p2', tms=np.max(y_gt[i], axis=0, keepdims=True), gt_tms=y_gt[i], G=G,
+        last_tm=np.max(x_gt[i], axis=0, keepdims=True), nNodes=args.nNodes) for i in range(te_step))
+
+    mlu_optimal_p2, solution_optimal_p2 = extract_results(results_optimal_p2)
+    route_changes_p2 = get_route_changes(solution_optimal_p2, G)
+    print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(route_changes_p2), np.std(route_changes_p2)))
+    print('P2                   | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu_optimal_p2),
+                                                                            np.mean(mlu_optimal_p2),
+                                                                            np.max(mlu_optimal_p2),
+                                                                            np.std(mlu_optimal_p2)))
+
+    save_results(args.log_dir, 'p2_optimal', mlu_optimal_p2, route_changes_p2)
 
 
 def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
@@ -326,8 +328,9 @@ def run_te(x_gt, y_gt, yhat, args):
     te_step = x_gt.shape[0]
     print('    Method           |   Min     Avg    Max     std')
 
-    ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args)
-    optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
+    # ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args)
+    # optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
+    optimal_p2_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
 
 
 def do_te(c, tms, gt_tms, G, last_tm, nNodes=12, solver_type='pulp_coin', solver=None):
