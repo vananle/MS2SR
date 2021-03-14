@@ -34,6 +34,7 @@ class MaxStepSRSolver:
         # 1) create optimization model
         problem = pl.LpProblem('SegmentRouting', pl.LpMinimize)
         theta = pl.LpVariable(name='theta', lowBound=0.0, cat='Continuous')
+
         x = pl.LpVariable.dicts(name='x',
                                 indexs=np.arange(num_node ** 3),
                                 cat='Binary')
@@ -92,6 +93,10 @@ class MaxStepSRSolver:
         # recompute the solution, proportional to new demand
         solution = deepcopy(self.solution)
 
+        if solution.any() < 0 or solution.any() > 1 or 1 > solution.any() > 0:
+            raise RuntimeError('Infeasible solution')
+
+        # extract utilization
         for u, v in G.edges:
             load = sum([solution[i, j, k] * tm[i, j] * util.g(segments[i][j][k], u, v) for i, j, k in
                         itertools.product(range(N), range(N), range(N))])
@@ -116,7 +121,7 @@ class MaxStepSRSolver:
 
     def solve(self, tm):
         '''
-        t: numpy.ndarray, traffic matrix at a given timestep
+        tm: numpy.ndarray, max traffic matrix
         '''
         # extract parameters
         problem, x = self.create_problem(tm)
@@ -127,14 +132,13 @@ class MaxStepSRSolver:
         self.problem = problem
         self.extract_status(problem)
         self.extract_solution(problem)
-        # self.extract_utilization(tm)
 
     def get_paths(self, i, j):
         G = self.G
         if i == j:
             list_k = [i]
         else:
-            list_k = np.where(self.solution[i, j] == 1.0)[0]
+            list_k = np.where(self.solution[i, j] > 0)[0]
         paths = []
         for k in list_k:
             path = []

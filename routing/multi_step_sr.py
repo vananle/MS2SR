@@ -81,7 +81,6 @@ class MultiStepSRSolver:
         num_node = G.number_of_nodes()
         segments = self.segments
         # extract utilization
-        utilizations = []
         for u, v in G.edges:
             load = sum([self.solution[i, j, k] * util.g(segments[i][j][k], u, v) for i, j, k in
                         itertools.product(range(num_node), range(num_node), range(num_node))])
@@ -127,15 +126,12 @@ class MultiStepSRSolver:
         # extract parameters
         problem, x = self.create_problem(tms)
 
-        # _s = time.time()
         self.init_solution()
         problem.solve()
-        # print('Solving time:', time.time() - _s)
-        self.problem = problem
 
+        self.problem = problem
         self.extract_status(problem)
         self.extract_solution(problem)
-        # self.extract_utilization(tms)
 
     def get_paths(self, i, j):
         G = self.G

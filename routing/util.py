@@ -73,8 +73,6 @@ class Segment:
         nx.add_path(self.segment_ik, shortest_path(G, i, k))
         nx.add_path(self.segment_kj, shortest_path(G, k, j))
 
-        # print(i, j, k)
-
 
 def get_paths(G, solution, i, j):
     if i == j:
@@ -93,7 +91,7 @@ def get_paths(G, solution, i, j):
 def get_segments(G):
     n = G.number_of_nodes()
 
-    segments = Parallel(n_jobs=56)(delayed(Segment)(G, i, j, k)
+    segments = Parallel(n_jobs=12)(delayed(Segment)(G, i, j, k)
                                    for i, j, k in itertools.product(range(n), range(n), range(n)))
     segments = np.asarray(segments).reshape((n, n, n))
     # for i, j, k in itertools.product(range(n), range(n), range(n)):

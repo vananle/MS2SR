@@ -13,4 +13,3 @@ from .one_step_sr import OneStepSRSolver
 # from .p1 import P1Solver
 from .shortest_path_routing import ShortestPathRoutingSolver
 from .util import *
-from .util_h import count_routing_change
