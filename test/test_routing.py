@@ -16,6 +16,16 @@ def test_load_graph(dataset):
         segments = np.load('../../data/topo/{}_segments.npy'.format(dataset), allow_pickle=True)
 
     print(segments)
+    tm = np.ones((12, 12)) * 100
+    gt_tms = np.zeros((10, 12, 12))
+
+    solver = routing.HeuristicSolver(G, time_limit=1)
+    p_solution = None
+    # _s = time.time()
+    try:
+        solution = solver.solve(tm, solution=p_solution)  # solve backtrack solution (line 131)
+    except:
+        solution = solver.initialize()
 
 
 if __name__ == '__main__':
