@@ -61,11 +61,11 @@ def get_path(G, i, j, k):
 
 
 def edge_in_path(edge, path):
-    '''
+    """
     input:
         - edge: tuple (u, v)
         - path: list of tuple (u, v)
-    '''
+    """
     sorted_path_edges = [tuple(sorted(path_edge)) for path_edge in path]
     if edge in sorted_path_edges:
         return True
@@ -243,7 +243,7 @@ class HeuristicSolver:
 
     def evaluate_fast(self, solution, best_solution, i, j):
         # get current utilization from edges
-        _utilizations = nx.get_edge_attributes(self.G, 'utilization')
+        utilizations = nx.get_edge_attributes(self.G, 'utilization')
 
         # new solution
         path_idx = solution[i, j]
@@ -256,13 +256,13 @@ class HeuristicSolver:
         # accumulate the utilization
         for u, v in best_path:
             u, v = sorted([u, v])
-            _utilizations[(u, v)] -= self.tm[i, j] / self.G[u][v]['capacity']
+            utilizations[(u, v)] -= self.tm[i, j] / self.G[u][v]['capacity']
         for u, v in path:
             u, v = sorted([u, v])
-            _utilizations[(u, v)] += self.tm[i, j] / self.G[u][v]['capacity']
+            utilizations[(u, v)] += self.tm[i, j] / self.G[u][v]['capacity']
         # utilizations = nx.get_edge_attributes(G, 'utilization').values()
 
-        return max(_utilizations)
+        return utilizations
 
     def update_link2flows(self, solution, new_solution, i, j):
         """
@@ -302,21 +302,19 @@ class HeuristicSolver:
         self.set_link_selection_prob()
         self.set_flow_selection_prob()
         self.lb = np.copy(best_solution)
-        tic = time.time()
 
         if self.verbose:
             print('initial theta={}'.format(u))
 
         # iteratively solve
-        num_eval = 0
+        tic = time.time()
         while time.time() - tic < self.time_limit:
-            num_eval += 1
             i, j = self.select_flow()
             solution = best_solution.copy()
             solution = self.mutate(solution, i, j)
             utilization = self.evaluate_fast(solution, best_solution, i, j)
-            mlu = np.max(utilization)
-            if mlu - theta < -eps:
+            mlu = max(utilization)
+            if theta - mlu >= eps:
                 # -------- Applying the better solution ---------------
                 # updating link2flow for flow (i,j)
                 self.update_link2flows(solution=best_solution, new_solution=solution, i=i, j=j)
@@ -325,13 +323,5 @@ class HeuristicSolver:
                 self.set_flow_selection_prob()
                 best_solution = solution
                 theta = mlu
-
-                # self.set_lowerbound(best_solution) -->  self.lb[i,j] = best_solution[i,j]
                 self.lb[i, j] = best_solution[i, j]
-                if self.verbose:
-                    print('[+] new solution found n={} t={:0.2f} i={} j={} tm={:0.2f} theta={}'.format(
-                        num_eval, time.time() - tic, i, j, tm[i, j], theta))
-        if self.verbose:
-            print('[+] final solution: n={} t={:0.2f} i={} j={} tm={:0.2f} theta={:0.6f}'.format(
-                num_eval, time.time() - tic, i, j, tm[i, j], theta))
         return best_solution
