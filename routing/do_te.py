@@ -177,24 +177,24 @@ def one_step_pred_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
 
 def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('P0 Heuristic solver')
-    solver_pred_p0_heuristic = LS2SRSolver(G, time_limit=10, verbose=args.verbose)
+    solver = LS2SRSolver(G, time_limit=10, verbose=args.verbose)
 
-    results_pred_p0_heuristic = Parallel(n_jobs=os.cpu_count() - 8)(delayed(p0_heuristic_solver)(
-        solver=solver_pred_p0_heuristic, tms=y_gt[i], gt_tms=y_gt[i], p_solution=None, nNodes=args.nNodes)
+    results = Parallel(n_jobs=os.cpu_count() - 8)(delayed(p0_heuristic_solver)(
+        solver=solver, tms=y_gt[i], gt_tms=y_gt[i], p_solution=None, nNodes=args.nNodes)
                                                                     for i in range(te_step))
 
-    mlu_pred_p0_heuristic, solution_pred_p0_heuristic = extract_results(results_pred_p0_heuristic)
-    route_changes_pred_p0_heuristic = get_route_changes_heuristic(solution_pred_p0_heuristic)
+    mlu_pred_p0_heuristic, solution_pred_p0_heuristic = extract_results(results)
+    route_changes = get_route_changes_heuristic(solution_pred_p0_heuristic)
     print(
-        'Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(route_changes_pred_p0_heuristic),
-                                                      np.std(route_changes_pred_p0_heuristic)))
+        'Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(route_changes),
+                                                      np.std(route_changes)))
     print('P0 Heuristic    {}      | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(args.model,
                                                                                np.min(mlu_pred_p0_heuristic),
                                                                                np.mean(mlu_pred_p0_heuristic),
                                                                                np.max(mlu_pred_p0_heuristic),
                                                                                np.std(mlu_pred_p0_heuristic)))
 
-    save_results(args.log_dir, 'p0_heuristic', mlu_pred_p0_heuristic, route_changes_pred_p0_heuristic)
+    save_results(args.log_dir, 'p0_heuristic', mlu_pred_p0_heuristic, route_changes)
 
 
 def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
@@ -214,7 +214,7 @@ def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
 
         u, solution = p2_heuristic_solver(solver, tm=yhat[i],
                                           gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
-        print(np.sum(y_gt[i]), ' ', std_mean, ' ', std_std, ' ', np.mean(u), ' ', theo_lamda)
+        # print(np.sum(y_gt[i]), ' ', std_mean, ' ', std_std, ' ', np.mean(u), ' ', theo_lamda)
         dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.mean(u), theo_lamda]
         results.append((u, solution))
 
