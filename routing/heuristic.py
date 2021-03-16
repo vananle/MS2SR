@@ -55,7 +55,7 @@ def edge_in_path(edge, path):
     return False
 
 
-class HeuristicSolver:
+class LS2SRSolver:
 
     def __init__(self, graph, time_limit=10, verbose=False):
         # save parameters

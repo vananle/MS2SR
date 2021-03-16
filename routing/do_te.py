@@ -2,7 +2,7 @@ import os
 
 from tqdm import tqdm
 
-from .heuristic import HeuristicSolver
+from .heuristic import LS2SRSolver
 from .max_step_sr import MaxStepSRSolver
 from .multi_step_sr import MultiStepSRSolver
 from .oblivious_routing import ObliviousRoutingSolver
@@ -17,13 +17,13 @@ def calculate_lamda(y_gt):
     return sum_max / maxmax
 
 
-def get_route_changes(routings, G):
+def get_route_changes(routings, graph):
     route_changes = np.zeros(shape=(routings.shape[0] - 1))
     for t in range(routings.shape[0] - 1):
         _route_changes = 0
         for i, j in itertools.product(range(routings.shape[1]), range(routings.shape[2])):
-            path_t_1 = get_paths(G, routings[t + 1], i, j)
-            path_t = get_paths(G, routings[t], i, j)
+            path_t_1 = get_paths(graph, routings[t + 1], i, j)
+            path_t = get_paths(graph, routings[t], i, j)
             if path_t_1 != path_t:
                 _route_changes += 1
 
@@ -177,7 +177,7 @@ def one_step_pred_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
 
 def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('P0 Heuristic solver')
-    solver_pred_p0_heuristic = HeuristicSolver(G, time_limit=10, verbose=args.verbose)
+    solver_pred_p0_heuristic = LS2SRSolver(G, time_limit=10, verbose=args.verbose)
 
     results_pred_p0_heuristic = Parallel(n_jobs=os.cpu_count() - 8)(delayed(p0_heuristic_solver)(
         solver=solver_pred_p0_heuristic, tms=y_gt[i], gt_tms=y_gt[i], p_solution=None, nNodes=args.nNodes)
@@ -200,7 +200,7 @@ def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
 def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('ls2sr solver')
     results = []
-    solver = HeuristicSolver(G, time_limit=1, verbose=args.verbose)
+    solver = LS2SRSolver(G, time_limit=1, verbose=args.verbose)
 
     solution = None
     dynamicity = np.zeros(shape=(te_step, 5))
@@ -372,10 +372,7 @@ def do_te(c, tms, gt_tms, G, last_tm, nNodes=12, solver_type='pulp_coin', solver
 
     segments = get_segments(G)
 
-    if c == 'p3':
-        mms_solver = MultiStepSRSolver(G, segments)
-        return mms_sr(mms_solver, tms, gt_tms)
-    elif c == 'last_step':
+    if c == 'last_step':
         last_tm = last_tm.reshape((nNodes, nNodes))
         last_tm = last_tm * (1.0 - np.eye(nNodes))
         last_step_solver = OneStepSRSolver(G, segments)
