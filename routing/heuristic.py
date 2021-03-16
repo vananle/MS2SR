@@ -1,12 +1,13 @@
 import itertools
 import time
-
+import os
 import networkx as nx
 import numpy as np
+from joblib import delayed, Parallel
 
 
-def shortest_path(G, source, target):
-    return nx.shortest_path(G, source=source, target=target, weight='weight')
+def shortest_path(graph, source, target):
+    return nx.shortest_path(graph, source=source, target=target, weight='weight')
 
 
 def remove_duplicated_path(paths):
@@ -27,12 +28,12 @@ def remove_duplicated_path(paths):
 
 
 def is_simple_path(path):
-    '''
+    """
     input:
         - path: which is a list of edges (u, v)
     return:
         - is_simple_path: bool
-    '''
+    """
     edges = []
     for edge in path:
         edge = tuple(sorted(edge))
@@ -40,24 +41,6 @@ def is_simple_path(path):
             return False
         edges.append(edge)
     return True
-
-
-def get_path(G, i, j, k):
-    '''
-    get a path for flow (i, j) with middle point k
-    return:
-        - list of edges on path
-    '''
-    p_ik = shortest_path(G, i, k)
-    p_kj = shortest_path(G, k, j)
-    edges = []
-    # compute edges from path p_ik, p_kj (which is 2 lists of nodes)
-    if len(p_ik) > 1:
-        for u, v in zip(p_ik[:-1], p_ik[1:]):
-            edges.append((u, v))
-        for u, v in zip(p_kj[:-1], p_kj[1:]):
-            edges.append((u, v))
-    return edges
 
 
 def edge_in_path(edge, path):
@@ -74,21 +57,23 @@ def edge_in_path(edge, path):
 
 class HeuristicSolver:
 
-    def __init__(self, G, time_limit=10, verbose=False):
+    def __init__(self, graph, time_limit=10, verbose=False):
         # save parameters
-        self.G = G
-        self.N = G.number_of_nodes()
+        self.G = graph
+        self.N = graph.number_of_nodes()
+        self.n_edges = len(self.G.edges)
+        self.indices_edge = np.arange(self.n_edges)
+
         self.time_limit = time_limit
         self.verbose = verbose
 
         # compute paths
         self.link2flow = None
         self.flow2link = self.initialize_flow2link()
-        self.lb, self.ub = self.get_solution_bound(self.flow2link)
+        self.ub = self.get_solution_bound(self.flow2link)
 
         # data for selecting next link -> demand to be mutate
         self.link_selection_prob = None
-        self.demand_selection_prob = None
 
         # cache
         self.tm = None
@@ -99,62 +84,80 @@ class HeuristicSolver:
         paths = [path for weights, path in sorted(zip(weights, paths), key=lambda x: x[0])]
         return paths
 
+    def get_path(self, i, j, k, paths):
+        """
+        get a path for flow (i, j) with middle point k
+        return:
+            - list of edges on path, list of nodes in path or (None, None) in case of duplicated path or non-simple path
+        """
+        if i == k:
+            return None, None
+
+        p_ik = shortest_path(self.G, i, k)
+        p_kj = shortest_path(self.G, k, j)
+        p = p_ik[:-1] + p_kj
+
+        # remove redundant paths and non-simple path and i == k
+        if len(p) != len(set(p)) or p in paths:
+            return None, None
+
+        edges = []
+        # compute edges from path p_ik, p_kj (which is 2 lists of nodes)
+        for u, v in zip(p_ik[:-1], p_ik[1:]):
+            edges.append((u, v))
+        for u, v in zip(p_kj[:-1], p_kj[1:]):
+            edges.append((u, v))
+        return edges, p
+
     def get_paths(self, i, j):
-        '''
+        """
         get all simple path for flow (i, j) on graph G
         return:
             - flows: list of paths
             - path: list of links on path (u, v)
-        '''
-        paths = []
+        """
         if i != j:
+            path_edges = []
+            paths = []
             for k in range(self.N):
                 try:
-                    path = get_path(self.G, i, j, k)
-                    if path and is_simple_path(path):
+                    edges, path = self.get_path(i, j, k, paths)
+                    if edges is not None:
+                        path_edges.append(edges)
                         paths.append(path)
                 except nx.NetworkXNoPath:
                     pass
-            # remove redundant paths
-            paths = remove_duplicated_path(paths)
             # sort paths by their total link weights for heuristic
-            paths = self.sort_paths(paths)
-        return paths
-
-    def initialize_link2flow(self):
-        '''
-        link2flow is a dictionary:
-            - key: link id (u, v)
-            - value: list of flows id (i, j)
-        '''
-        link2flow = {}
-        for u, v in self.G.edges:
-            link2flow[(u, v)] = []
-        return link2flow
+            path_edges = self.sort_paths(path_edges)
+            return path_edges
+        else:
+            return []
 
     def initialize_flow2link(self):
-        '''
+        """
         flow2link is a dictionary:
             - key: flow id (i, j)
             - value: list of paths
             - path: list of links on path (u, v)
-        '''
+        """
         flow2link = {}
+
+        list_paths = Parallel(n_jobs=os.cpu_count())(delayed(self.get_paths)(i, j)
+                                                     for i, j in itertools.product(range(self.N), range(self.N)))
         for i, j in itertools.product(range(self.N), range(self.N)):
-            paths = self.get_paths(i, j)
-            flow2link[i, j] = paths
+            flow2link[i, j] = list_paths[i * self.N + j]
+
         return flow2link
 
     def get_solution_bound(self, flow2link):
-        lb = np.zeros([self.N, self.N], dtype=int)
         ub = np.empty([self.N, self.N], dtype=int)
         for i, j in itertools.product(range(self.N), range(self.N)):
             ub[i, j] = len(flow2link[(i, j)])
         ub[ub == 0] = 1
-        return lb, ub
+        return ub
 
     def initialize(self):
-        return np.zeros_like(self.lb)
+        return np.zeros_like(self.ub)
 
     def g(self, i, j, u, v, k):
         if (u, v) in self.flow2link[(i, j)][k] or \
@@ -169,31 +172,28 @@ class HeuristicSolver:
 
     def set_link_selection_prob(self, alpha=16):
         # extract parameters
-        G = self.G
-        # compute the prob
-        utilizations = nx.get_edge_attributes(G, 'utilization').values()
+        utilizations = nx.get_edge_attributes(self.G, 'utilization').values()
         utilizations = np.array(list(utilizations))
         self.link_selection_prob = utilizations ** alpha / np.sum(utilizations ** alpha)
 
-    def set_flow_selection_prob(self, alpha=1):
+    def set_flow_selection_prob(self, u, v, beta=1):
         # extract parameters
-        G = self.G
         tm = self.tm
         # compute the prob
-        self.demand_selection_prob = {}
-        for u, v in G.edges:
-            demands = np.array([tm[i, j] for i, j in self.link2flow[(u, v)]])
-            self.demand_selection_prob[(u, v)] = demands ** alpha / np.sum(demands ** alpha)
+        demands = np.array([tm[i, j] for i, j in self.link2flow[(u, v)]])
+        return demands ** beta / np.sum(demands ** beta)
 
     def select_flow(self):
         # extract parameters
         # select link
-        indices = np.arange(len(self.G.edges))
-        index = np.random.choice(indices, p=self.link_selection_prob)
+        self.set_link_selection_prob()
+
+        index = np.random.choice(self.indices_edge, p=self.link_selection_prob)
         link = list(self.G.edges)[index]
         # select flow
+        flow_prob = self.set_flow_selection_prob(link[0], link[1])
         indices = np.arange(len(self.link2flow[link]))
-        index = np.random.choice(indices, p=self.demand_selection_prob[link])
+        index = np.random.choice(indices, p=flow_prob)
         flow = self.link2flow[link][index]
         return flow
 
@@ -220,34 +220,22 @@ class HeuristicSolver:
         utilizations = []
         for u, v in self.G.edges:
             load = 0
-            # demands = [] # ???
             for i, j in itertools.product(range(self.N), range(self.N)):
                 if self.has_path(i, j):
                     k = solution[i, j]
                     load += self.g(i, j, u, v, k) * tm[i, j]
-                    # todo: explain these two lines
-                    # if self.g(i, j, u, v, k):  # ???
-                    #     demands.append((i, j))
             capacity = self.G.get_edge_data(u, v)['capacity']
             utilization = load / capacity
             self.G[u][v]['utilization'] = utilization
             utilizations.append(utilization)
         return max(utilizations)
 
-    def mutate(self, solution, i, j):
-        self.lb[i, j] = self.lb[i, j] + 1
-        if self.lb[i, j] >= self.ub[i, j]:
-            self.lb[i, j] = 0
-        solution[i, j] = self.lb[i, j]
-        return solution
-
-    def evaluate_fast(self, solution, best_solution, i, j):
+    def evaluate_fast(self, new_path_idx, best_solution, i, j):
         # get current utilization from edges
         utilizations = nx.get_edge_attributes(self.G, 'utilization')
 
         # new solution
-        path_idx = solution[i, j]
-        path = self.flow2link[(i, j)][path_idx]
+        new_path = self.flow2link[(i, j)][new_path_idx]
 
         # current best solution
         best_path_idx = best_solution[i, j]
@@ -257,20 +245,17 @@ class HeuristicSolver:
         for u, v in best_path:
             u, v = sorted([u, v])
             utilizations[(u, v)] -= self.tm[i, j] / self.G[u][v]['capacity']
-        for u, v in path:
+        for u, v in new_path:
             u, v = sorted([u, v])
             utilizations[(u, v)] += self.tm[i, j] / self.G[u][v]['capacity']
-        # utilizations = nx.get_edge_attributes(G, 'utilization').values()
 
         return utilizations
 
-    def update_link2flows(self, solution, new_solution, i, j):
+    def update_link2flows(self, old_path_idx, new_path_idx, i, j):
         """
         Updating link2flows after changing path of flow (i,j)
         """
-        old_path_idx = solution[i, j]
         old_path = self.flow2link[i, j][old_path_idx]
-        new_path_idx = new_solution[i, j]
         new_path = self.flow2link[i, j][new_path_idx]
 
         for edge in self.G.edges:
@@ -282,9 +267,6 @@ class HeuristicSolver:
     def apply_solution(self, utilizations):
         nx.set_edge_attributes(self.G, utilizations, name='utilization')
 
-        # todo: remove this line
-        assert np.array_equal(nx.get_edge_attributes(self.G, 'utilization').values(), utilizations)
-
     def solve(self, tm, solution=None, eps=1e-6):
         # save parameters
         self.tm = tm
@@ -295,33 +277,25 @@ class HeuristicSolver:
 
         # initialize solver state
         self.set_link2flow(solution)
-        best_solution = solution.copy()
+        best_solution = solution
         u = self.evaluate(solution)
         theta = u
-        self.set_link2flow(best_solution)
-        self.set_link_selection_prob()
-        self.set_flow_selection_prob()
-        self.lb = np.copy(best_solution)
-
-        if self.verbose:
-            print('initial theta={}'.format(u))
 
         # iteratively solve
         tic = time.time()
         while time.time() - tic < self.time_limit:
             i, j = self.select_flow()
-            solution = best_solution.copy()
-            solution = self.mutate(solution, i, j)
-            utilization = self.evaluate_fast(solution, best_solution, i, j)
+            if i == j:
+                continue
+            new_path_idx = best_solution[i, j] + 1
+            if new_path_idx >= self.ub[i, j]:
+                new_path_idx = 0
+
+            utilization = self.evaluate_fast(new_path_idx, best_solution, i, j)
             mlu = max(utilization)
             if theta - mlu >= eps:
-                # -------- Applying the better solution ---------------
-                # updating link2flow for flow (i,j)
-                self.update_link2flows(solution=best_solution, new_solution=solution, i=i, j=j)
+                self.update_link2flows(old_path_idx=best_solution[i, j], new_path_idx=new_path_idx, i=i, j=j)
                 self.apply_solution(utilization)  # updating utilization in Graph aka self.G
-                self.set_link_selection_prob()
-                self.set_flow_selection_prob()
-                best_solution = solution
+                best_solution[i, j] = new_path_idx
                 theta = mlu
-                self.lb[i, j] = best_solution[i, j]
         return best_solution
