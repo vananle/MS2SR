@@ -2,7 +2,7 @@ import os
 
 from tqdm import tqdm
 
-from .heuristic import LS2SRSolver
+from .ls2sr import LS2SRSolver
 from .max_step_sr import MaxStepSRSolver
 from .multi_step_sr import MultiStepSRSolver
 from .oblivious_routing import ObliviousRoutingSolver

@@ -4,7 +4,7 @@ msg=False
 '''
 from . import util
 from .do_te import do_te, run_te, max_step_ls2sr
-from .heuristic import LS2SRSolver
+from .ls2sr import LS2SRSolver
 # from .ls2sr import OneStepLocalSearch2SRSolver
 from .max_step_sr import MaxStepSRSolver
 from .multi_step_sr import MultiStepSRSolver
