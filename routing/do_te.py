@@ -223,11 +223,11 @@ def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('Route changes: Avg {:.3f} std {:.3f}'.format(np.sum(route_changes) /
                                                         (args.seq_len_y * route_changes.shape[0]),
                                                         np.std(route_changes)))
-    print('P2 Heuristic    {}      | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(args.model,
-                                                                               np.min(mlu),
-                                                                               np.mean(mlu),
-                                                                               np.max(mlu),
-                                                                               np.std(mlu)))
+    print('P2 ls2sr    {}      | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(args.model,
+                                                                           np.min(mlu),
+                                                                           np.mean(mlu),
+                                                                           np.max(mlu),
+                                                                           np.std(mlu)))
 
     save_results(args.log_dir, 'ls2sr_p2', mlu, route_changes)
     np.save(os.path.join(args.log_dir, 'ls2sr_p2_dyn'), dynamicity)
