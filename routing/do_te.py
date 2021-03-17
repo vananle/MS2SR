@@ -354,9 +354,9 @@ def run_te(x_gt, y_gt, yhat, args):
     print('    Method           |   Min     Avg    Max     std')
 
     ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args)
-    # optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
-    # optimal_p2_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
-    # optimal_p3_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
+    optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
+    optimal_p2_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
+    optimal_p3_solver(yhat, y_gt, x_gt, G, segments, te_step, args)
 
 
 def do_te(c, tms, gt_tms, G, last_tm, nNodes=12, solver_type='pulp_coin', solver=None):
