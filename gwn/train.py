@@ -26,7 +26,7 @@ def main(args, **model_kwargs):
     elif args.dataset == 'geant_tm':
         args.nNodes = 22
         args.day_size = 96
-    elif args.dataset == 'brain_tm':
+    elif 'brain' in args.dataset:
         args.nNodes = 9
         args.day_size = 1440
     elif 'sinet' in args.dataset:
