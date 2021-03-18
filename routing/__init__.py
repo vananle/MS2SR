@@ -3,7 +3,7 @@ modify dong 288 file ~/.local/lib/python3.8/site-packages/pulp/apis/coin_api.py
 msg=False
 '''
 from . import util
-from .do_te import do_te, run_te, max_step_ls2sr
+from .do_te import run_te
 from .ls2sr import LS2SRSolver
 # from .ls2sr import OneStepLocalSearch2SRSolver
 from .max_step_sr import MaxStepSRSolver
