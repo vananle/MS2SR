@@ -201,3 +201,7 @@ def get_node2flows(solver):
                 if node in path:
                     node2flows[node].append((i, j))
     return node2flows
+
+
+def count_routing_change(solution1, solution2):
+    return np.sum(solution1 != solution2)

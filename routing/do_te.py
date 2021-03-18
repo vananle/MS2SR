@@ -8,7 +8,6 @@ from .multi_step_sr import MultiStepSRSolver
 from .oblivious_routing import ObliviousRoutingSolver
 from .one_step_sr import OneStepSRSolver
 from .util import *
-from .util_h import count_routing_change
 
 
 def calculate_lamda(y_gt):
