@@ -20,10 +20,10 @@ warnings.filterwarnings("ignore", category=UserWarning)
 def main(args, **model_kwargs):
     device = torch.device(args.device)
     args.device = device
-    if args.dataset == 'abilene_tm':
+    if 'abilene' in args.dataset:
         args.nNodes = 12
         args.day_size = 288
-    elif args.dataset == 'geant_tm':
+    elif 'geant' in args.dataset:
         args.nNodes = 22
         args.day_size = 96
     elif 'brain' in args.dataset:
