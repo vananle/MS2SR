@@ -1,5 +1,3 @@
-import os
-
 from tqdm import tqdm
 
 from .ls2sr import LS2SRSolver
@@ -337,7 +335,7 @@ def p1(solver, tms, gt_tms):
     except:
         pass
     for i in range(gt_tms.shape[0]):
-        u.append(get_max_utilization_v2(solver, gt_tms[i]))
+        u.append(solver.evaluate(gt_tms[i]))
     return u, solver.solution
 
 
@@ -348,7 +346,7 @@ def p3(solver, tms, gt_tms):
     except:
         pass
     for i in range(gt_tms.shape[0]):
-        u.append(get_max_utilization_v2(solver, gt_tms[i]))
+        u.append(solver.evaluate(gt_tms[i]))
     return u, solver.solution
 
 
@@ -360,7 +358,7 @@ def p2(solver, tms, gt_tms):
     except:
         pass
     for i in range(gt_tms.shape[0]):
-        u.append(get_max_utilization_v2(solver, gt_tms[i]))
+        u.append(solver.evaluate(gt_tms[i]))
     return u, solver.solution
 
 
@@ -457,12 +455,7 @@ def oblivious_sr(solver, tms):
 def run_te(x_gt, y_gt, yhat, args):
     graph = load_network_topology(args.dataset)
 
-    if not os.path.isfile('../../data/topo/{}_segments.npy'.format(args.dataset)):
-
-        segments = get_segments(graph)
-        np.save('../../data/topo/{}_segments'.format(args.dataset), segments)
-    else:
-        segments = np.load('../../data/topo/{}_segments.npy'.format(args.dataset), allow_pickle=True)
+    segments = compute_path(graph, args)
 
     x_gt, y_gt, yhat = prepare_te_data(x_gt, y_gt, yhat, args)
 
