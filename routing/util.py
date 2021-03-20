@@ -151,6 +151,32 @@ def compute_path(graph, args):
     return segments
 
 
+def g(segments, i, j, k, u, v):
+    if len(segments[i, j]) == 0:
+        return 0
+    elif len(segments[i, j][k]) == 0:
+        return 0
+
+    value = 0
+    if len(segments[i, j][k][0]) != 0 and (u, v) in segments[i, j][k][0]:
+        value += 1
+
+    if len(segments[i, j][k][1]) != 0 and (u, v) in segments[i, j][k][1]:
+        value += 1
+
+    if value == 2:
+        value = 100
+    return value
+
+
+def flatten_index(i, j, k, num_node):
+    return i * num_node ** 2 + j * num_node + k
+
+
+def count_routing_change(solution1, solution2):
+    return np.sum(solution1 != solution2)
+
+
 def draw_segment(G, segment, i, j, k):
     pos = nx.get_node_attributes(G, 'pos')
     plt.subplot(131)
@@ -190,46 +216,6 @@ def draw_segment_ground_truth(G, segment, i, j, k):
     plt.title('Segment path k={} j={}'.format(k, j))
 
 
-def g(segments, i, j, k, u, v):
-    if len(segments[i, j]) == 0:
-        return 0
-    elif len(segments[i, j][k]) == 0:
-        return 0
-
-    value = 0
-    if len(segments[i, j][k][0]) != 0 and (u, v) in segments[i, j][k][0]:
-        value += 1
-
-    if len(segments[i, j][k][1]) != 0 and (u, v) in segments[i, j][k][1]:
-        value += 1
-
-    if value == 2:
-        value = 100
-    return value
-
-
-def flatten_index(i, j, k, num_node):
-    return i * num_node ** 2 + j * num_node + k
-
-
-def get_max_utilization(solver, tm):
-    '''
-    Calculate the utilization with traffic matrix "tm"
-    which has been used to solve the test_routing problem
-    '''
-    solver.extract_utilization(tm)
-    return np.max([solver.G[u][v]['utilization'] for u, v in solver.G.edges])
-
-
-def get_max_utilization_v2(solver, tm):
-    '''
-    Use the exiting solution on solver.
-    Calculate the utilization with a new traffic matrix "tm"
-    '''
-    solver.extract_utilization_v2(tm)
-    return np.max([solver.G[u][v]['utilization'] for u, v in solver.G.edges])
-
-
 def get_degree(G, i):
     return len([_ for _ in nx.neighbors(G, i)])
 
@@ -260,5 +246,3 @@ def get_node2flows(solver):
     return node2flows
 
 
-def count_routing_change(solution1, solution2):
-    return np.sum(solution1 != solution2)
