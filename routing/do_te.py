@@ -19,8 +19,8 @@ def get_route_changes(routings, graph):
     for t in range(routings.shape[0] - 1):
         _route_changes = 0
         for i, j in itertools.product(range(routings.shape[1]), range(routings.shape[2])):
-            path_t_1 = get_paths(graph, routings[t + 1], i, j)
-            path_t = get_paths(graph, routings[t], i, j)
+            path_t_1 = get_paths_from_sulution(graph, routings[t + 1], i, j)
+            path_t = get_paths_from_sulution(graph, routings[t], i, j)
             if path_t_1 != path_t:
                 _route_changes += 1
 
@@ -413,7 +413,7 @@ def last_step_sr(solver, last_tm, gt_tms):
         pass
 
     for i in range(gt_tms.shape[0]):
-        u.append(get_max_utilization_v2(solver, gt_tms[i]))
+        u.append(solver.evaluate(gt_tms[i]))
     return u, solver.solution
 
 
@@ -425,7 +425,7 @@ def one_step_predicted_sr(solver, tm, gt_tms):
         pass
 
     for i in range(gt_tms.shape[0]):
-        u.append(get_max_utilization_v2(solver, gt_tms[i]))
+        u.append(solver.evaluate(gt_tms[i]))
     return u, solver.solution
 
 
@@ -438,7 +438,7 @@ def optimal_sr(solver, gt_tms):
         except:
             pass
         solutions.append(solver.solution)
-        u.append(get_max_utilization_v2(solver, gt_tms[i]))
+        u.append(solver.evaluate(gt_tms[i]))
 
     solutions = np.stack(solutions, axis=0)
     return u, solutions
@@ -447,7 +447,7 @@ def optimal_sr(solver, gt_tms):
 def oblivious_sr(solver, tms):
     u = []
     for i in range(tms.shape[0]):
-        u.append(get_max_utilization_v2(solver, tms[i]))
+        u.append(solver.evaluate(tms[i]))
 
     return u, solver.solution
 

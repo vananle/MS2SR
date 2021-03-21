@@ -89,6 +89,20 @@ def sort_paths(graph, paths):
     return paths
 
 
+def get_paths_from_sulution(graph, solution, i, j):
+    if i == j:
+        list_k = [i]
+    else:
+        list_k = np.where(solution[i, j] == 1.0)[0]
+    paths = []
+    for k in list_k:
+        path = []
+        path += shortest_path(G, i, k)[:-1]
+        path += shortest_path(G, k, j)
+        paths.append(path)
+    return paths
+
+
 def get_paths(graph, i, j):
     """
     get all simple path for flow (i, j) on graph G
