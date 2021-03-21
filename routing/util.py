@@ -97,8 +97,8 @@ def get_paths_from_sulution(graph, solution, i, j):
     paths = []
     for k in list_k:
         path = []
-        path += shortest_path(G, i, k)[:-1]
-        path += shortest_path(G, k, j)
+        path += shortest_path(graph, i, k)[:-1]
+        path += shortest_path(graph, k, j)
         paths.append(path)
     return paths
 
