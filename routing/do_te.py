@@ -198,7 +198,7 @@ def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
         u, solution = p2_heuristic_solver(solver, tm=yhat[i],
                                           gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
         # print(np.sum(y_gt[i]), ' ', std_mean, ' ', std_std, ' ', np.mean(u), ' ', theo_lamda)
-        dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.mean(u), theo_lamda]
+        dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.sum(std), np.mean(u), theo_lamda]
         results.append((u, solution))
 
     mlu, solution = extract_results(results)
