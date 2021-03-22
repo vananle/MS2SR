@@ -15,6 +15,8 @@ dataset = 'abilene_tm'
 
 data = loadmat('../../data/data/{}.mat'.format(dataset))['X']
 
+data = data[:45000]
+
 data15 = [np.mean(data[i:i + 3], axis=0) for i in range(0, data.shape[0], 3)]
 data15 = np.asarray(data15)
 print('Abilene15', data15.shape)
