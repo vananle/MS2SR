@@ -62,7 +62,7 @@ class StandardScaler_torch():
         return data
 
 
-class MissingDataset(Dataset):
+class TrafficDataset(Dataset):
 
     def __init__(self, X, args, scaler=None):
         # save parameters
@@ -236,18 +236,18 @@ def get_dataloader(args):
     train, val, test = train_test_split(X)
 
     # Training set
-    train_set = MissingDataset(train, args=args, scaler=None)
+    train_set = TrafficDataset(train, args=args, scaler=None)
     train_loader = DataLoader(train_set,
                               batch_size=args.train_batch_size,
                               shuffle=True)
 
     # validation set
-    val_set = MissingDataset(val, args=args, scaler=train_set.scaler)
+    val_set = TrafficDataset(val, args=args, scaler=train_set.scaler)
     val_loader = DataLoader(val_set,
                             batch_size=args.val_batch_size,
                             shuffle=False)
 
-    test_set = MissingDataset(test, args=args, scaler=train_set.scaler)
+    test_set = TrafficDataset(test, args=args, scaler=train_set.scaler)
     test_loader = DataLoader(test_set,
                              batch_size=args.test_batch_size,
                              shuffle=False)
