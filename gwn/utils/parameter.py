@@ -114,6 +114,7 @@ def print_args(args):
     print('[+] Time-series prediction experiment')
     print('---------------------------------------------------------')
     print('    - dataset                :', args.dataset)
+    print('    - granularity scale      :', args.k)
     print('    - num_series             :', args.nSeries)
     print('    - train size             : {}x{}'.format(args.train_size, args.nSeries))
     print('    - val size               : {}x{}'.format(args.val_size, args.nSeries))
