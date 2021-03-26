@@ -62,6 +62,15 @@ class StandardScaler_torch():
         return data
 
 
+def granularity(data, k):
+    if k == 1:
+        return data
+    else:
+        newdata = [np.mean(data[i:i + k], axis=0) for i in range(0, data.shape[0], k)]
+        newdata = np.asarray(newdata)
+        return newdata
+
+
 class TrafficDataset(Dataset):
 
     def __init__(self, X, args, scaler=None):
@@ -71,8 +80,14 @@ class TrafficDataset(Dataset):
         self.type = args.type
         self.out_seq_len = args.out_seq_len
         self.trunk = args.trunk
+        self.k = args.k  # granularity
 
-        self.X = self.np2torch(X)
+        self.oX = np.copy(X)
+        self.oX = self.np2torch(self.oX)
+
+        # generate data with granularity
+        self.X = granularity(X, self.k)
+        self.X = self.np2torch(self.X)
 
         self.n_timeslots, self.n_series = self.X.shape
 
@@ -169,7 +184,9 @@ class TrafficDataset(Dataset):
 
             y = torch.stack(y, dim=0)
 
-        y_gt = self.X[t + self.args.seq_len_x: t + self.args.seq_len_x + self.args.seq_len_y]
+        # ground truth data for doing traffic engineering
+        y_gt = self.oX[(t + self.args.seq_len_x) * self.k:
+                       (t + self.args.seq_len_x + self.args.seq_len_y) * self.k]
 
         sample = {'x': x, 'y': y, 'x_gt': xgt, 'y_gt': y_gt}
         return sample
