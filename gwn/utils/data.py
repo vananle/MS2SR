@@ -68,6 +68,7 @@ def granularity(data, k):
     else:
         newdata = [np.mean(data[i:i + k], axis=0) for i in range(0, data.shape[0], k)]
         newdata = np.asarray(newdata)
+        print('new data: ', newdata.shape)
         return newdata
 
 
@@ -150,7 +151,7 @@ class TrafficDataset(Dataset):
         t = self.indices[idx]
 
         x = self.X_scaled[t:t + self.args.seq_len_x]  # step: t-> t + seq_x
-        xgt = self.X[t:t + self.args.seq_len_x]  # step: t-> t + seq_x
+        xgt = self.oX[t * self.k:(t + self.args.seq_len_x) * self.k]  # step: t-> t + seq_x
         x = x.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
 
         if self.type == 'p1':
