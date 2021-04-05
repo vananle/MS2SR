@@ -293,8 +293,7 @@ class LS2SRSolver:
                 new_path_idx = 0
 
             utilization = self.evaluate_fast(new_path_idx, best_solution, i, j)
-            mlu = max(utilization)
-            print(utilization.values())
+            mlu = max(utilization.values())
             if theta - mlu >= eps:
                 print('path changed')
                 self.update_link2flows(old_path_idx=best_solution[i, j], new_path_idx=new_path_idx, i=i, j=j)
