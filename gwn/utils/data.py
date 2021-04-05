@@ -243,8 +243,8 @@ def get_dataloader(args):
     # loading data
     X = load_raw(args)
 
-    if X.shape[0] > 45000:
-        _size = 45000
+    if X.shape[0] > 10000:
+        _size = 10000
     else:
         _size = X.shape[0]
 
