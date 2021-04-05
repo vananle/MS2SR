@@ -404,6 +404,7 @@ def p2_heuristic_solver(solver, tm, gt_tms, p_solution, nNodes):
     # print('solving time: ', time.time() - _s)
     for i in range(gt_tms.shape[0]):
         u.append(solver.evaluate(solution, gt_tms[i]))
+    print('Sum solution ', solution.sum())
     return u, solution
 
 
