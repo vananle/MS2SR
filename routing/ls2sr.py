@@ -268,7 +268,7 @@ class LS2SRSolver:
     def apply_solution(self, utilizations):
         nx.set_edge_attributes(self.G, utilizations, name='utilization')
 
-    def solve(self, tm, solution=None, eps=1e-6):
+    def solve(self, tm, solution=None, eps=1e-8):
         # save parameters
         self.tm = tm
 
@@ -295,6 +295,7 @@ class LS2SRSolver:
             utilization = self.evaluate_fast(new_path_idx, best_solution, i, j)
             mlu = max(utilization)
             if theta - mlu >= eps:
+                print('path changed')
                 self.update_link2flows(old_path_idx=best_solution[i, j], new_path_idx=new_path_idx, i=i, j=j)
                 self.apply_solution(utilization)  # updating utilization in Graph aka self.G
                 best_solution[i, j] = new_path_idx
