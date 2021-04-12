@@ -94,7 +94,7 @@ class GCRINT(torch.nn.Module):
     def lstm_layer(self, x, cell):
         # input x [bs, rc, n, s]
         # output (torch) [bs, hidden, n, s]
-        len = x.size(2)
+        len = x.size(-1)
 
         h = torch.autograd.Variable(torch.zeros((x.size(0), self.lstm_hidden)))
         c = torch.autograd.Variable(torch.zeros((x.size(0), self.lstm_hidden)))
