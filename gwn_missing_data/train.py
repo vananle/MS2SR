@@ -49,10 +49,10 @@ def main(args, **model_kwargs):
 
     args.in_dim = in_dim
 
-    aptinit, supports = utils.make_graph_inputs(args, device)
+    # aptinit, supports = utils.make_graph_inputs(args, device)
 
     if args.model == 'gwn':
-        model = models.GWNet.from_args(args, supports, aptinit, **model_kwargs)
+        model = models.GWNet.from_args(args, None, None, **model_kwargs)
     else:
         model = models.GCRINT(args)
     model.to(device)

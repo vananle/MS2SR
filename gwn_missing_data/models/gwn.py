@@ -109,7 +109,7 @@ class GWNet(nn.Module):
     @classmethod
     def from_args(cls, args, supports, aptinit, **kwargs):
         defaults = dict(dropout=args.dropout, supports=supports,
-                        do_graph_conv=args.do_graph_conv, addaptadj=args.addaptadj, aptinit=aptinit,
+                        do_graph_conv=True, addaptadj=True, aptinit=aptinit,
                         in_dim=args.in_dim, apt_size=args.apt_size, out_seq_len=args.out_seq_len,
                         residual_channels=args.hidden, dilation_channels=args.hidden,
                         stride=args.stride, kernel_size=args.kernel_size,

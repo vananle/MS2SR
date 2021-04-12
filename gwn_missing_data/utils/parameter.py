@@ -40,12 +40,6 @@ def get_args():
                         help='adj data path')
     parser.add_argument('--adjtype', type=str, default='doubletransition', help='adj type (default doubletransition)',
                         choices=ADJ_CHOICES)
-    parser.add_argument('--do_graph_conv', action='store_true',
-                        help='whether to add graph convolution layer')
-    parser.add_argument('--aptonly', action='store_true', help='whether only adaptive adj')
-    parser.add_argument('--addaptadj', action='store_true', help='whether add adaptive adj')
-    parser.add_argument('--randomadj', action='store_true',
-                        help='whether random initialize adaptive adj')
     parser.add_argument('--apt_size', default=10, type=int, help='default 10')
 
     # Wavenet
