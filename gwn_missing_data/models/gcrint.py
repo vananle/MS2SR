@@ -198,7 +198,7 @@ class GCRINT(torch.nn.Module):
 
         outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
         outputs = self.end_conv_1(outputs)  # [b, h', n, s/L]
-        outputs = torch.nn.functional.relu(self.end_conv_1(outputs))  # [b, h', n, s/L]
+        outputs = torch.nn.functional.relu(outputs)  # [b, h', n, s/L]
         outputs = self.end_conv_2(outputs)  # [b, s, n, s/L]
         if self.verbose:
             print('outputs end_conv = ', outputs.shape)
