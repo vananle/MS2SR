@@ -172,6 +172,9 @@ class TrafficDatasetMissing(Dataset):
 
         xgt = self.oX[t * self.k:(t + self.args.seq_len_x) * self.k]  # step: t-> t + seq_x
         x = x.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
+        x_inv = x_inv.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
+        w = w.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
+        w_inv = w_inv.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
 
         if self.type == 'p1':
             y = self.X[t + self.args.seq_len_x: t + self.args.seq_len_x + self.args.seq_len_y]

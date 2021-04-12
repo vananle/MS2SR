@@ -118,8 +118,12 @@ class GCRINT(torch.nn.Module):
         return outputs
 
     def feature_concat(self, input_tensor, mask):
-        x = torch.stack([input_tensor, mask], dim=1)  # [b, 2, s, n]
-        x = x.transpose(2, 3)  # [b, 2, n, s]
+        """
+        input_tensor: [bs, s, n, f]
+        mask: [bs, s, n ,1]
+        """
+        x = torch.stack([input_tensor, mask], dim=-1)  # [b, s, n, 2]
+        x = x.transpose(1, 3)  # [b, 2, n, s]
 
         if self.verbose:
             print('input x: ', x.shape)
