@@ -65,10 +65,6 @@ class GCRINT(torch.nn.Module):
         self.lstm_cell_bw = torch.nn.LSTMCell(input_size=self.residual_channels,
                                               hidden_size=self.lstm_hidden, bias=True)
 
-        # self.linear_lstm = torch.nn.ModuleList(
-        #     [torch.nn.Linear(in_features=self.lstm_hidden, out_features=self.nSeries, bias=True)
-        #      for _ in range(self.num_layers)])
-
         self.supports_len = len(self.fixed_supports)
         nodevecs = torch.randn(self.nSeries, self.apt_size), torch.randn(self.apt_size, self.nSeries)
         self.supports_len += 1
@@ -83,13 +79,6 @@ class GCRINT(torch.nn.Module):
         self.end_conv_2 = torch.nn.Conv2d(self.lstm_hidden, self.seq_len, (1, 1), bias=True)
 
         self.linear_out = torch.nn.Linear(in_features=int(self.seq_len / (2 ** (self.num_layers - 1))), out_features=1)
-
-        # self.final_linear_out_1 = torch.nn.Linear(in_features=3 * self.nSeries,
-        #                                           out_features=128)
-        # self.final_linear_out_1 = torch.nn.Linear(in_features=2 * self.nSeries,
-        #                                           out_features=128)
-        # self.final_linear_out_2 = torch.nn.Linear(in_features=128,
-        #                                           out_features=self.nSeries)
 
     def lstm_layer(self, x, cell):
         # input x [bs, rc, n, s]
@@ -193,7 +182,6 @@ class GCRINT(torch.nn.Module):
 
             x = graph_out
             x = x[..., 0:len:2]  # [b, rc, n, s/2 ]
-            # in_y = in_y[..., 0:len:2]  # [b, rc, n, s/2 ]
             x = self.bn[l](x)
 
             if self.verbose:
@@ -202,9 +190,9 @@ class GCRINT(torch.nn.Module):
         if self.verbose:
             print('final skip outputs = ', outputs.shape)
 
-        # outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
+        outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
         outputs = self.end_conv_1(outputs)  # [b, h', n, s/L]
-        # outputs = torch.nn.functional.relu(self.end_conv_1(outputs))  # [b, h', n, s/L]
+        outputs = torch.nn.functional.relu(self.end_conv_1(outputs))  # [b, h', n, s/L]
         outputs = self.end_conv_2(outputs)  # [b, s, n, s/L]
         if self.verbose:
             print('outputs end_conv = ', outputs.shape)
