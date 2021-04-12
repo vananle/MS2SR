@@ -88,7 +88,7 @@ class GCRINT(torch.nn.Module):
         h = torch.autograd.Variable(torch.zeros((x.size(0), self.lstm_hidden)))
 
         if torch.cuda.is_available():
-            h, c = h.to(self.device)
+            h = h.to(self.device)
 
         outputs = []
 
