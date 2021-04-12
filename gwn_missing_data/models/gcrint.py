@@ -72,7 +72,7 @@ class GCRINT(torch.nn.Module):
 
         self.cell_fw = torch.nn.ModuleList(
             [torch.nn.LSTM(input_size=self.residual_channels,
-                           hidden_size=self.lstm_hidden, bias=True, batch_first=True, dropout=0.2)
+                           hidden_size=self.lstm_hidden, bias=True, batch_first=True, dropout=0.2, bidirectional=True)
              for _ in range(self.num_layers)])
 
         # # only first layer has backward LSTM
