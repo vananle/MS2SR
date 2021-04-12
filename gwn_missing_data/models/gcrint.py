@@ -1,3 +1,5 @@
+from typing import List
+
 import torch
 
 
@@ -30,6 +32,18 @@ class GraphConvNet(torch.nn.Module):
         return h
 
 
+def parallel_rnn(seq, len, cell, h):
+    output = []
+    for i in range(len):
+        _in = seq[..., i]
+        h = cell(_in, h)
+
+        output.append(h)
+    output = torch.stack(output, dim=-1)  # [b, h, len]
+
+    return output
+
+
 class GCRINT(torch.nn.Module):
     def __init__(self, args):
         super(GCRINT, self).__init__()
@@ -56,9 +70,9 @@ class GCRINT(torch.nn.Module):
                                                 out_channels=self.residual_channels,
                                                 kernel_size=(1, 1))
 
-        self.lstm_cell_fw = torch.nn.ModuleList(
-            [torch.nn.GRUCell(input_size=self.residual_channels,
-                              hidden_size=self.lstm_hidden, bias=True)
+        self.cell_fw = torch.nn.ModuleList(
+            [torch.nn.GRU(input_size=self.residual_channels,
+                          hidden_size=self.lstm_hidden, bias=True, batch_first=True, dropout=0.2)
              for _ in range(self.num_layers)])
 
         # # only first layer has backward LSTM
@@ -83,24 +97,14 @@ class GCRINT(torch.nn.Module):
     def lstm_layer(self, x, cell):
         # input x [bs, rc, n, s]
         # output (torch) [bs, hidden, n, s]
-        len = x.size(-1)
 
-        h = torch.autograd.Variable(torch.zeros((x.size(0), self.lstm_hidden)))
-
-        if torch.cuda.is_available():
-            h = h.to(self.device)
+        futures: List[torch.jit.Future[torch.Tensor]] = []
+        for k in range(self.nSeries):
+            futures.append(torch.jit.fork(cell, x[:, :, k, :]))
 
         outputs = []
-
-        for k in range(self.nSeries):
-            output = []
-            for i in range(len):
-                _in = x[..., k, i]
-                h = cell(_in, h)
-
-                output.append(h)
-            output = torch.stack(output, dim=-1)  # [b, h, len]
-            outputs.append(output)
+        for future in futures:
+            outputs.append(torch.jit.wait(future))
 
         outputs = torch.stack(outputs, dim=2)  # [b, h, n, len]
         return outputs
@@ -152,7 +156,7 @@ class GCRINT(torch.nn.Module):
             if self.verbose:
                 print('layer {} input = {}'.format(l, in_lstm.shape))
 
-            gcn_in = self.lstm_layer(in_lstm, self.lstm_cell_fw[l])  # fw lstm  [b, h, n, len]
+            gcn_in = self.lstm_layer(in_lstm, self.cell_fw[l])  # fw lstm  [b, h, n, len]
 
             # if l == 0:
             #     in_lstm_bw = x_bw  # [b, rc, n, s]
