@@ -287,20 +287,20 @@ def get_dataloader(args):
     # Training set
     train_set = TrafficDatasetMissing(X=splitted_data['X_train'], W=splitted_data['W_train'], args=args, scaler=None)
     train_loader = DataLoader(train_set,
-                              batch_size=args.train_batch_size,
+                              batch_size=args.train_bs,
                               shuffle=True)
 
     # validation set
     val_set = TrafficDatasetMissing(X=splitted_data['X_val'], W=splitted_data['W_val'], args=args,
                                     scaler=train_set.scaler)
     val_loader = DataLoader(val_set,
-                            batch_size=args.val_batch_size,
+                            batch_size=args.val_bs,
                             shuffle=False)
 
     test_set = TrafficDatasetMissing(X=splitted_data['X_test'], W=splitted_data['W_test'], args=args,
                                      scaler=train_set.scaler)
     test_loader = DataLoader(test_set,
-                             batch_size=args.test_batch_size,
+                             batch_size=args.test_bs,
                              shuffle=False)
 
     return train_loader, val_loader, test_loader

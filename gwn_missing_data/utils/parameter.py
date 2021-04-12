@@ -63,9 +63,9 @@ def get_args():
     parser.add_argument('--dropout', type=float, default=0.3, help='dropout rate')
 
     # training
-    parser.add_argument('--train_batch_size', type=int, default=256)
-    parser.add_argument('--val_batch_size', type=int, default=256)
-    parser.add_argument('--test_batch_size', type=int, default=1)
+    parser.add_argument('--train_bs', type=int, default=256)
+    parser.add_argument('--val_bs', type=int, default=256)
+    parser.add_argument('--test_bs', type=int, default=1)
     parser.add_argument('--device', type=str, default='cuda:0')
 
     parser.add_argument('--epochs', type=int, default=100, help='')
