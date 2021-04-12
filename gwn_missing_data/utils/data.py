@@ -165,8 +165,8 @@ class TrafficDatasetMissing(Dataset):
         x = self.X_scaled[t:t + self.args.seq_len_x]  # step: t-> t + seq_x
         w = self.W[t:t + self.args.seq_len_x]
 
-        x_inv = self.X_scaled[t:t + self.args.seq_len]
-        w_inv = self.W[t:t + self.args.seq_len]
+        x_inv = self.X_scaled[t:t + self.args.seq_len_x]
+        w_inv = self.W[t:t + self.args.seq_len_x]
         x_inv = torch.flip(x_inv, dims=[0])
         w_inv = torch.flip(w_inv, dims=[0])
 
