@@ -236,7 +236,8 @@ def load_raw(args):
         X = np.reshape(X, newshape=(X.shape[0], -1))
 
     # load missing mask
-    path = os.path.join(args.datapath, 'mask/{}/{}/{:0.1f}_{}.mat'.format(args.dataset, args.type, args.sr, args.seed))
+    path = os.path.join(args.datapath,
+                        'mask/{}/{}/{:0.1f}_{}.mat'.format(args.dataset, args.miss_type, args.sr, args.seed))
     W = load_matlab_matrix(path, 'W')
     return X, W
 

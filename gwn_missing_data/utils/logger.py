@@ -31,16 +31,19 @@ class Logger:
     def __init__(self, args):
 
         if args.model == 'gwn':
-            log_dir = '../../logs/im2021_missing/{}_{}_{}_{}_{}_{}_{}_{}'.format(args.model, args.dataset, args.sr,
-                                                                                 args.k, args.seq_len_x,
-                                                                                 args.seq_len_y, args.loss_fn,
-                                                                                 args.type)
-        else:
-            log_dir = '../../logs/im2021_missing/{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(args.model, args.n_lstm,
-                                                                                    args.dataset,
-                                                                                    args.sr, args.k, args.seq_len_x,
+            log_dir = '../../logs/im2021_missing/{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(args.model,
+                                                                                    args.dataset, args.sr,
+                                                                                    args.miss_type,
+                                                                                    args.k, args.seq_len_x,
                                                                                     args.seq_len_y, args.loss_fn,
                                                                                     args.type)
+        else:
+            log_dir = '../../logs/im2021_missing/{}_{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(args.model, args.n_lstm,
+                                                                                       args.dataset,
+                                                                                       args.sr, args.miss_type,
+                                                                                       args.k, args.seq_len_x,
+                                                                                       args.seq_len_y, args.loss_fn,
+                                                                                       args.type)
 
         if args.tod:
             log_dir = log_dir + '_tod'

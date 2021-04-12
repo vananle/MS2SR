@@ -17,6 +17,8 @@ def get_args():
     parser.add_argument('--datapath', type=str, default='../../data')
     parser.add_argument('--type', type=str, default='p2', choices=['p1', 'p2', 'p3'],
                         help='problem formulation (default p2)')
+    parser.add_argument('--miss_type', type=str, default='uniform', choices=['uniform', 'block'],
+                        help='problem formulation (default p2)')
     parser.add_argument('--trunk', type=int, default=3, help='trunk for p3 problem (default 3)')
     parser.add_argument('--k', type=int, default=1, help='granularity scale', choices=[1, 2, 3])
 
