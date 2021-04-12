@@ -34,7 +34,7 @@ class GCRINT(torch.nn.Module):
     def __init__(self, args):
         super(GCRINT, self).__init__()
 
-        self.seq_len = args.seq_len - 2
+        self.seq_len = args.seq_len_x - 2
         self.nSeries = args.nSeries
         # self.nNodes = args.nNodes
         self.lstm_hidden = args.lstm_hidden
