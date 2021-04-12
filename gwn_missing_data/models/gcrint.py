@@ -106,7 +106,7 @@ class GCRINT(torch.nn.Module):
 
         outputs = []
         for future in futures:
-            outputs.append(torch.jit.wait(future))
+            outputs.append(torch.jit.wait(future)[0])
 
         print(outputs[0])
 
