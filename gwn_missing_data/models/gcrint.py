@@ -59,7 +59,7 @@ class GCRINT(torch.nn.Module):
         self.lstm_cell_fw = torch.nn.ModuleList(
             [torch.nn.GRUCell(input_size=self.residual_channels,
                               hidden_size=self.lstm_hidden, bias=True)
-             for l in range(self.num_layers)])
+             for _ in range(self.num_layers)])
 
         # # only first layer has backward LSTM
         # self.lstm_cell_bw = torch.nn.LSTMCell(input_size=self.residual_channels,
@@ -86,10 +86,9 @@ class GCRINT(torch.nn.Module):
         len = x.size(-1)
 
         h = torch.autograd.Variable(torch.zeros((x.size(0), self.lstm_hidden)))
-        c = torch.autograd.Variable(torch.zeros((x.size(0), self.lstm_hidden)))
 
         if torch.cuda.is_available():
-            h, c = h.to(self.device), c.to(self.device)
+            h, c = h.to(self.device)
 
         outputs = []
 
@@ -97,7 +96,7 @@ class GCRINT(torch.nn.Module):
             output = []
             for i in range(len):
                 _in = x[..., k, i]
-                h, c = cell(_in, (h, c))
+                h = cell(_in, h)
 
                 output.append(h)
             output = torch.stack(output, dim=-1)  # [b, h, len]
