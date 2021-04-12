@@ -98,6 +98,8 @@ class GCRINT(torch.nn.Module):
         # input x [bs, rc, n, s]
         # output (torch) [bs, hidden, n, s]
 
+        x = x.transpose(1, 3)  # [bs, s, n, rc]
+
         futures: List[torch.jit.Future[torch.Tensor]] = []
         for k in range(self.nSeries):
             futures.append(torch.jit.fork(cell, x[:, :, k, :]))
@@ -120,7 +122,7 @@ class GCRINT(torch.nn.Module):
         if self.verbose:
             print('input x: ', x.shape)
 
-        f1, f2 = x[:, [0]], x[:, 1:]
+        f1, f2 = x[:, [0], :, :], x[:, 1:, :, :]
         x1 = self.start_conv(f1)
         # x2 = torch.nn.functional.leaky_relu(self.cat_feature_conv(f2))
         x2 = self.cat_feature_conv(f2)
@@ -151,7 +153,7 @@ class GCRINT(torch.nn.Module):
         for l in range(self.num_layers):
 
             in_lstm = x  # [b, rc, n, s]
-            len = in_lstm.size(3)
+            len = in_lstm.size(-1)
 
             if self.verbose:
                 print('layer {} input = {}'.format(l, in_lstm.shape))
