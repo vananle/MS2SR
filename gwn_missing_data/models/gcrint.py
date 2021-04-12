@@ -108,7 +108,7 @@ class GCRINT(torch.nn.Module):
         for future in futures:
             outputs.append(torch.jit.wait(future)[0])
 
-        print(outputs[0])
+        print(outputs[0].size())
 
         outputs = torch.stack(outputs, dim=2)  # [b, h, n, len]
         return outputs
