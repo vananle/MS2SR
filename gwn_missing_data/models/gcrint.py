@@ -132,7 +132,7 @@ class GCRINT(torch.nn.Module):
 
         return x
 
-    def forward(self, input_tensor, mask, input_tensor_bw, mask_bw, y, ymask):
+    def forward(self, input_tensor, mask, input_tensor_bw, mask_bw):
 
         # Input: x [b, s, n]
         # w: mask [b, s, n]
@@ -151,7 +151,6 @@ class GCRINT(torch.nn.Module):
         if self.verbose:
             print('Adjmx: ', adjacency_matrices[0].shape)
 
-        in_y = y
         outputs = 0
         for l in range(self.num_layers):
 
@@ -208,10 +207,6 @@ class GCRINT(torch.nn.Module):
 
         outputs = self.linear_out(outputs)  # [b, s, n, 1]
         outputs = outputs.squeeze(dim=-1)  # [b, s, n]
-        # outputs = outputs + y
-        # outputs = torch.cat([outputs, y, ymask], dim=-1)
-        # outputs = self.final_linear_out_1(outputs)
-        # outputs = self.final_linear_out_2(outputs)
 
         if self.verbose:
             print('final outputs = ', outputs.shape)

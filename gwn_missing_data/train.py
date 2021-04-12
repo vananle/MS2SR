@@ -39,7 +39,7 @@ def main(args, **model_kwargs):
     args.val_size = val_loader.dataset.X.shape[0]
     args.test_size = test_loader.dataset.X.shape[0]
 
-    in_dim = 1
+    in_dim = 2
     if args.tod:
         in_dim += 1
     if args.ma:
@@ -79,12 +79,7 @@ def main(args, **model_kwargs):
             for epoch in iterator:
                 train_loss, train_rse, train_mae, train_mse, train_mape, train_rmse = [], [], [], [], [], []
                 for iter, batch in enumerate(train_loader):
-
-                    x = batch['x']  # [b, seq_x, n, f]
-                    y = batch['y']  # [b, seq_y, n]
-
-                    if y.max() == 0: continue
-                    loss, rse, mae, mse, mape, rmse = engine.train(x, y)
+                    loss, rse, mae, mse, mape, rmse = engine.train(batch, args.model)
                     train_loss.append(loss)
                     train_rse.append(rse)
                     train_mae.append(mae)
@@ -94,7 +89,7 @@ def main(args, **model_kwargs):
 
                 engine.scheduler.step()
                 with torch.no_grad():
-                    val_loss, val_rse, val_mae, val_mse, val_mape, val_rmse = engine.eval(val_loader)
+                    val_loss, val_rse, val_mae, val_mse, val_mape, val_rmse = engine.eval(val_loader, args.model)
                 m = dict(train_loss=np.mean(train_loss), train_rse=np.mean(train_rse),
                          train_mae=np.mean(train_mae), train_mse=np.mean(train_mse),
                          train_mape=np.mean(train_mape), train_rmse=np.mean(train_rmse),
@@ -115,7 +110,7 @@ def main(args, **model_kwargs):
     # Metrics on test data
     engine.model.load_state_dict(torch.load(logger.best_model_save_path))
     with torch.no_grad():
-        test_met_df, x_gt, y_gt, y_real, yhat = engine.test(test_loader, engine.model, args.out_seq_len)
+        test_met_df, x_gt, y_gt, y_real, yhat = engine.test(test_loader, engine.model, args.out_seq_len, args.model)
         test_met_df.round(6).to_csv(os.path.join(logger.log_dir, 'test_metrics.csv'))
         print('Prediction Accuracy:')
         print(utils.summary(logger.log_dir))

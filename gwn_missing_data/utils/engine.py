@@ -30,16 +30,26 @@ class Trainer():
         return cls(model, scaler, args.learning_rate, args.weight_decay, clip=args.clip,
                    lr_decay_rate=args.lr_decay_rate, lossfn=args.loss_fn)
 
-    def train(self, input, real_val):
+    def train(self, batch, model_type):
         self.model.train()
         self.optimizer.zero_grad()
         # input = torch.nn.functional.pad(input, (1, 0, 0, 0))
 
-        output = self.model(input)  # now, output = [bs, seq_y, n]
+        x = batch['x']  # [b, seq_x, n, f]
+        w = batch['w']  # [b, seq_x, n, f]
+        xi = batch['xi']  # [b, seq_x, n, f]
+        wi = batch['wi']  # [b, seq_x, n, f]
+
+        y = batch['y']  # [b, seq_y, n]
+        if model_type == 'gwn':
+            output = self.model(x)  # now, output = [bs, seq_y, n]
+        else:
+            output = self.model(x, w, xi, wi)  # now, output = [bs, seq_y, n]
+
         predict = self.scaler.inverse_transform(output)
 
-        loss = self.lossfn(predict, real_val)
-        rse, mae, mse, mape, rmse = calc_metrics(predict, real_val)
+        loss = self.lossfn(predict, y)
+        rse, mae, mse, mape, rmse = calc_metrics(predict, y)
         loss.backward()
 
         if self.clip is not None:
@@ -47,20 +57,28 @@ class Trainer():
         self.optimizer.step()
         return loss.item(), rse.item(), mae.item(), mse.item(), mape.item(), rmse.item()
 
-    def _eval(self, input, real_val):
+    def _eval(self, batch, model_type):
         self.model.eval()
+        x = batch['x']  # [b, seq_x, n, f]
+        w = batch['w']  # [b, seq_x, n, f]
+        xi = batch['xi']  # [b, seq_x, n, f]
+        wi = batch['wi']  # [b, seq_x, n, f]
 
-        output = self.model(input)  # now, output = [bs, seq_y, n]
+        y = batch['y']  # [b, seq_y, n]
+        if model_type == 'gwn':
+            output = self.model(x)  # now, output = [bs, seq_y, n]
+        else:
+            output = self.model(x, w, xi, wi)  # now, output = [bs, seq_y, n]
 
         predict = self.scaler.inverse_transform(output)
 
         predict = torch.clamp(predict, min=0., max=10e10)
-        loss = self.lossfn(predict, real_val)
-        rse, mae, mse, mape, rmse = calc_metrics(predict, real_val)
+        loss = self.lossfn(predict, y)
+        rse, mae, mse, mape, rmse = calc_metrics(predict, y)
 
         return loss.item(), rse.item(), mae.item(), mse.item(), mape.item(), rmse.item()
 
-    def test(self, test_loader, model, out_seq_len):
+    def test(self, test_loader, model, out_seq_len, model_type):
         model.eval()
         outputs = []
         y_real = []
@@ -68,10 +86,16 @@ class Trainer():
         y_gt = []
         for _, batch in enumerate(test_loader):
             x = batch['x']  # [b, seq_x, n, f]
+            w = batch['w']  # [b, seq_x, n, f]
+            xi = batch['xi']  # [b, seq_x, n, f]
+            wi = batch['wi']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
+            if model_type == 'gwn':
+                output = model(x)  # now, output = [bs, seq_y, n]
+            else:
+                output = model(x, w, xi, wi)  # now, output = [bs, seq_y, n]
 
-            preds = model(x)
-            preds = self.scaler.inverse_transform(preds)  # [bs, seq_y, n]
+            preds = self.scaler.inverse_transform(output)  # [bs, seq_y, n]
             outputs.append(preds)
             y_real.append(y)
             x_gt.append(batch['x_gt'])
@@ -93,14 +117,11 @@ class Trainer():
         test_met_df = pd.DataFrame(test_met, columns=['rse', 'mae', 'mse', 'mape', 'rmse']).rename_axis('t')
         return test_met_df, x_gt, y_gt, y_real, yhat
 
-    def eval(self, val_loader):
+    def eval(self, val_loader, model_type):
         """Run validation."""
         val_loss, val_rse, val_mae, val_mse, val_mape, val_rmse = [], [], [], [], [], []
         for _, batch in enumerate(val_loader):
-            x = batch['x']  # [b, seq_x, n, f]
-            y = batch['y']  # [b, seq_y, n]
-
-            metrics = self._eval(x, y)
+            metrics = self._eval(batch, model_type)
             val_loss.append(metrics[0])
             val_rse.append(metrics[1])
             val_mae.append(metrics[2])
