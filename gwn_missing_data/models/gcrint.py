@@ -122,7 +122,7 @@ class GCRINT(torch.nn.Module):
         input_tensor: [bs, s, n, f]
         mask: [bs, s, n ,1]
         """
-        x = torch.stack([input_tensor, mask], dim=-1)  # [b, s, n, 2]
+        x = torch.cat([input_tensor, mask], dim=-1)  # [b, s, n, 2]
         x = x.transpose(1, 3)  # [b, 2, n, s]
 
         if self.verbose:
