@@ -165,16 +165,16 @@ class TrafficDatasetMissing(Dataset):
         x = self.X_scaled[t:t + self.args.seq_len_x]  # step: t-> t + seq_x
         w = self.W[t:t + self.args.seq_len_x]
 
-        x_inv = self.X_scaled[t:t + self.args.seq_len_x]
-        w_inv = self.W[t:t + self.args.seq_len_x]
-        x_inv = torch.flip(x_inv, dims=[0])
-        w_inv = torch.flip(w_inv, dims=[0])
+        # x_inv = self.X_scaled[t:t + self.args.seq_len_x]
+        # w_inv = self.W[t:t + self.args.seq_len_x]
+        # x_inv = torch.flip(x_inv, dims=[0])
+        # w_inv = torch.flip(w_inv, dims=[0])
 
         xgt = self.oX[t * self.k:(t + self.args.seq_len_x) * self.k]  # step: t-> t + seq_x
         x = x.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
-        x_inv = x_inv.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
+        # x_inv = x_inv.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
         w = w.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
-        w_inv = w_inv.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
+        # w_inv = w_inv.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
 
         if self.type == 'p1':
             y = self.X[t + self.args.seq_len_x: t + self.args.seq_len_x + self.args.seq_len_y]
@@ -211,7 +211,8 @@ class TrafficDatasetMissing(Dataset):
         y_gt = self.oX[(t + self.args.seq_len_x) * self.k:
                        (t + self.args.seq_len_x + self.args.seq_len_y) * self.k]
 
-        sample = {'x': x, 'w': w, 'xi': x_inv, 'wi': w_inv, 'y': y, 'x_gt': xgt, 'y_gt': y_gt}
+        # sample = {'x': x, 'w': w, 'xi': x_inv, 'wi': w_inv, 'y': y, 'x_gt': xgt, 'y_gt': y_gt}
+        sample = {'x': x, 'w': w, 'y': y, 'x_gt': xgt, 'y_gt': y_gt}
         return sample
 
     def transform(self, X):

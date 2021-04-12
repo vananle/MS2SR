@@ -57,13 +57,13 @@ class GCRINT(torch.nn.Module):
                                                 kernel_size=(1, 1))
 
         self.lstm_cell_fw = torch.nn.ModuleList(
-            [torch.nn.LSTMCell(input_size=self.residual_channels,
-                               hidden_size=self.lstm_hidden, bias=True)
+            [torch.nn.GRUCell(input_size=self.residual_channels,
+                              hidden_size=self.lstm_hidden, bias=True)
              for l in range(self.num_layers)])
 
-        # only first layer has backward LSTM
-        self.lstm_cell_bw = torch.nn.LSTMCell(input_size=self.residual_channels,
-                                              hidden_size=self.lstm_hidden, bias=True)
+        # # only first layer has backward LSTM
+        # self.lstm_cell_bw = torch.nn.LSTMCell(input_size=self.residual_channels,
+        #                                       hidden_size=self.lstm_hidden, bias=True)
 
         self.supports_len = len(self.fixed_supports)
         nodevecs = torch.randn(self.nSeries, self.apt_size), torch.randn(self.apt_size, self.nSeries)
@@ -103,7 +103,7 @@ class GCRINT(torch.nn.Module):
             output = torch.stack(output, dim=-1)  # [b, h, len]
             outputs.append(output)
 
-        outputs = torch.stack(outputs, dim=2)  # [b, h, len]
+        outputs = torch.stack(outputs, dim=2)  # [b, h, n, len]
         return outputs
 
     def feature_concat(self, input_tensor, mask):
@@ -125,13 +125,13 @@ class GCRINT(torch.nn.Module):
 
         return x
 
-    def forward(self, input_tensor, mask, input_tensor_bw, mask_bw):
+    def forward(self, input_tensor, mask):
 
         # Input: x [b, s, n]
         # w: mask [b, s, n]
 
         x = self.feature_concat(input_tensor, mask)  # [b, rc, n, s]
-        x_bw = self.feature_concat(input_tensor_bw, mask_bw)  # [b, rc, n, s]
+        # x_bw = self.feature_concat(input_tensor_bw, mask_bw)  # [b, rc, n, s]
 
         if self.verbose:
             print('After startconv x = ', x.shape)
@@ -155,12 +155,12 @@ class GCRINT(torch.nn.Module):
 
             gcn_in = self.lstm_layer(in_lstm, self.lstm_cell_fw[l])  # fw lstm  [b, h, n, len]
 
-            if l == 0:
-                in_lstm_bw = x_bw  # [b, rc, n, s]
-
-                gcn_in_bw = self.lstm_layer(in_lstm_bw, self.lstm_cell_bw)  # bw lstm layer [b, h, n, len]
-                gcn_in_bw = torch.flip(gcn_in_bw, dims=[-1])  # flip bw output
-                gcn_in = (gcn_in + gcn_in_bw) / 2.0  # combine 2 outputs
+            # if l == 0:
+            #     in_lstm_bw = x_bw  # [b, rc, n, s]
+            #
+            #     gcn_in_bw = self.lstm_layer(in_lstm_bw, self.lstm_cell_bw)  # bw lstm layer [b, h, n, len]
+            #     gcn_in_bw = torch.flip(gcn_in_bw, dims=[-1])  # flip bw output
+            #     gcn_in = (gcn_in + gcn_in_bw) / 2.0  # combine 2 outputs
 
             gcn_in = torch.tanh(gcn_in)
 

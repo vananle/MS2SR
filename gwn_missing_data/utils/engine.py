@@ -37,14 +37,12 @@ class Trainer():
 
         x = batch['x']  # [b, seq_x, n, f]
         w = batch['w']  # [b, seq_x, n, f]
-        xi = batch['xi']  # [b, seq_x, n, f]
-        wi = batch['wi']  # [b, seq_x, n, f]
 
         y = batch['y']  # [b, seq_y, n]
         if model_type == 'gwn':
             output = self.model(x)  # now, output = [bs, seq_y, n]
         else:
-            output = self.model(x, w, xi, wi)  # now, output = [bs, seq_y, n]
+            output = self.model(x, w)  # now, output = [bs, seq_y, n]
 
         predict = self.scaler.inverse_transform(output)
 
@@ -61,14 +59,12 @@ class Trainer():
         self.model.eval()
         x = batch['x']  # [b, seq_x, n, f]
         w = batch['w']  # [b, seq_x, n, f]
-        xi = batch['xi']  # [b, seq_x, n, f]
-        wi = batch['wi']  # [b, seq_x, n, f]
 
         y = batch['y']  # [b, seq_y, n]
         if model_type == 'gwn':
             output = self.model(x)  # now, output = [bs, seq_y, n]
         else:
-            output = self.model(x, w, xi, wi)  # now, output = [bs, seq_y, n]
+            output = self.model(x, w)  # now, output = [bs, seq_y, n]
 
         predict = self.scaler.inverse_transform(output)
 
@@ -87,13 +83,11 @@ class Trainer():
         for _, batch in enumerate(test_loader):
             x = batch['x']  # [b, seq_x, n, f]
             w = batch['w']  # [b, seq_x, n, f]
-            xi = batch['xi']  # [b, seq_x, n, f]
-            wi = batch['wi']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
             if model_type == 'gwn':
                 output = model(x)  # now, output = [bs, seq_y, n]
             else:
-                output = model(x, w, xi, wi)  # now, output = [bs, seq_y, n]
+                output = model(x, w)  # now, output = [bs, seq_y, n]
 
             preds = self.scaler.inverse_transform(output)  # [bs, seq_y, n]
             outputs.append(preds)
