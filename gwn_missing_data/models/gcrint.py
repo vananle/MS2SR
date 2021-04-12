@@ -111,6 +111,7 @@ class GCRINT(torch.nn.Module):
         print(outputs[0].size())
 
         outputs = torch.stack(outputs, dim=2)  # [b, h, n, len]
+        outputs = outputs.transpose(1, 3)
         return outputs
 
     def feature_concat(self, input_tensor, mask):
