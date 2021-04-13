@@ -132,10 +132,10 @@ class GCRINT(torch.nn.Module):
 
     def forward(self, input_tensor, mask):
 
-        # Input: x [b, s, n]
-        # w: mask [b, s, n]
+        # Input: x [b, s, n, feature]
+        # w: mask [b, s, n, 1]
 
-        bs, seq_len, nSeries = input_tensor.size()
+        bs, seq_len, nSeries, nfeatures = input_tensor.size()
 
         x = self.feature_concat(input_tensor, mask)  # [b, rc, n, s]
         # x_bw = self.feature_concat(input_tensor_bw, mask_bw)  # [b, rc, n, s]
