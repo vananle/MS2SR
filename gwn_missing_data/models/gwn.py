@@ -130,10 +130,11 @@ class GWNet(nn.Module):
         cur_state_dict[wk][:w.shape[0]] = w
         self.load_state_dict(cur_state_dict)
 
-    def forward(self, x):
+    def forward(self, x, mask):
 
         # input x (b, seq_x, n, features)
-        x = x.transpose(1, 3)
+        x = torch.cat([x, mask], dim=-1)  # [b, s, n, 2]
+        x = x.transpose(1, 3)  # [b, 2, n, seqlen]
 
         if self.verbose:
             print('-------------------GWN model----------------------')
@@ -144,7 +145,7 @@ class GWNet(nn.Module):
             x = nn.functional.pad(x, (self.receptive_field - in_len, 0, 0, 0))
 
         # first linear layer
-        if self.cat_feat_gc:
+        if x.size(1) > 1:
             f1, f2 = x[:, [0]], x[:, 1:]
             x1 = self.start_conv(f1)
             x2 = F.leaky_relu(self.cat_feature_conv(f2))
