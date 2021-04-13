@@ -87,11 +87,6 @@ class GCRINT(torch.nn.Module):
              for _ in range(self.num_layers)])
         self.bn = torch.nn.ModuleList([torch.nn.BatchNorm2d(self.residual_channels) for _ in range(self.num_layers)])
 
-        # self.end_conv_1 = torch.nn.Conv2d(
-        #     in_channels=self.residual_channels * int(self.seq_len / (2 ** (self.num_layers - 1))),
-        #     out_channels=self.lstm_hidden, kernel_size=(1, 1), bias=True)
-        # self.end_conv_2 = torch.nn.Conv2d(in_channels=self.lstm_hidden,
-        #                                   out_channels=self.seq_len, kernel_size=(1, 1), bias=True)
         self.end_linear_1 = torch.nn.Linear(
             in_features=self.residual_channels * int(self.seq_len / (2 ** (self.num_layers - 1))),
             out_features=self.lstm_hidden, bias=True)
@@ -111,11 +106,11 @@ class GCRINT(torch.nn.Module):
 
         outputs = []
         for future in futures:
-            outputs.append(torch.jit.wait(future)[0])
+            outputs.append(torch.jit.wait(future)[0])  # torch.jit.wait(future)[0] [b, seq, hidden]
 
-        outputs = torch.stack(outputs, dim=2)  # [b, h, n, len]
-        outputs = outputs.transpose(1, 3)
-        return outputs
+        outputs = torch.stack(outputs, dim=2)  # [b, sq, n, h]
+        outputs = outputs.transpose(1, 3)  # [b, hidden, n, seq]
+        return outputs  # [b, hidden, n, seq
 
     def feature_concat(self, input_tensor, mask):
         """
