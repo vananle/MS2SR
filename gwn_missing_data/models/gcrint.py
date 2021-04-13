@@ -200,12 +200,13 @@ class GCRINT(torch.nn.Module):
             if self.verbose:
                 print('---------------------------------')
 
-        if self.verbose:
-            print('final skip outputs = ', outputs.shape)
-
         outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
 
         outputs = outputs.reshape(bs, -1, nSeries, )  # [b, gcn_hidden*seq/L, n]
+
+        if self.verbose:
+            print('final skip outputs = ', outputs.shape)
+
         outputs = self.end_linear_1(outputs)  # # [b, hidden, n]
         outputs = torch.nn.functional.relu(outputs)
         outputs = self.end_linear_2(outputs)  # [b, 1, n]
