@@ -87,11 +87,17 @@ class GCRINT(torch.nn.Module):
              for _ in range(self.num_layers)])
         self.bn = torch.nn.ModuleList([torch.nn.BatchNorm2d(self.residual_channels) for _ in range(self.num_layers)])
 
-        self.end_conv_1 = torch.nn.Conv2d(
-            in_channels=self.residual_channels * int(self.seq_len / (2 ** (self.num_layers - 1))),
-            out_channels=self.lstm_hidden, kernel_size=(1, 1), bias=True)
-        self.end_conv_2 = torch.nn.Conv2d(in_channels=self.lstm_hidden,
-                                          out_channels=self.seq_len, kernel_size=(1, 1), bias=True)
+        # self.end_conv_1 = torch.nn.Conv2d(
+        #     in_channels=self.residual_channels * int(self.seq_len / (2 ** (self.num_layers - 1))),
+        #     out_channels=self.lstm_hidden, kernel_size=(1, 1), bias=True)
+        # self.end_conv_2 = torch.nn.Conv2d(in_channels=self.lstm_hidden,
+        #                                   out_channels=self.seq_len, kernel_size=(1, 1), bias=True)
+        self.end_linear_1 = torch.nn.Linear(
+            in_features=self.residual_channels * int(self.seq_len / (2 ** (self.num_layers - 1))),
+            out_features=self.lstm_hidden, bias=True)
+        self.end_linear_2 = torch.nn.Linear(
+            in_features=self.lstm_hidden,
+            out_features=1, bias=True)
 
     def lstm_layer(self, x, cell):
         # input x [bs, rc, n, s]
@@ -200,9 +206,9 @@ class GCRINT(torch.nn.Module):
         outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
 
         outputs = outputs.reshape(bs, -1, nSeries, )  # [b, gcn_hidden*seq/L, n]
-        outputs = self.end_conv_1(outputs)  # # [b, hidden, n]
+        outputs = self.end_linear_1(outputs)  # # [b, hidden, n]
         outputs = torch.nn.functional.relu(outputs)
-        outputs = self.end_conv_2(outputs)  # [b, 1, n]
+        outputs = self.end_linear_2(outputs)  # [b, 1, n]
         outputs = outputs.squeeze(dim=1)  # [b, n]
 
         if self.verbose:
