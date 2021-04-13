@@ -50,10 +50,8 @@ class GCRINT(torch.nn.Module):
 
         self.seq_len = args.seq_len_x
         self.nSeries = args.nSeries
-        # self.nNodes = args.nNodes
         self.lstm_hidden = args.lstm_hidden
         self.gcn_indim = args.in_dim
-        # self.gcn_hidden = args.gcn_hidden
         self.dropout = args.dropout
         self.num_layers = args.n_lstm
         self.device = args.device
@@ -89,10 +87,11 @@ class GCRINT(torch.nn.Module):
              for _ in range(self.num_layers)])
         self.bn = torch.nn.ModuleList([torch.nn.BatchNorm2d(self.residual_channels) for _ in range(self.num_layers)])
 
-        self.end_conv_1 = torch.nn.Conv2d(self.residual_channels, self.lstm_hidden * 2, (1, 1), bias=True)
-        self.end_conv_2 = torch.nn.Conv2d(self.lstm_hidden * 2, self.seq_len, (1, 1), bias=True)
-
-        self.linear_out = torch.nn.Linear(in_features=int(self.seq_len / (2 ** (self.num_layers - 1))), out_features=1)
+        self.end_conv_1 = torch.nn.Conv2d(
+            in_channels=self.residual_channels * int(self.seq_len / (2 ** (self.num_layers - 1))),
+            out_channels=self.lstm_hidden, kernel_size=(1, 1), bias=True)
+        self.end_conv_2 = torch.nn.Conv2d(in_channels=self.lstm_hidden,
+                                          out_channels=self.seq_len, kernel_size=(1, 1), bias=True)
 
     def lstm_layer(self, x, cell):
         # input x [bs, rc, n, s]
@@ -135,6 +134,8 @@ class GCRINT(torch.nn.Module):
 
         # Input: x [b, s, n]
         # w: mask [b, s, n]
+
+        bs, seq_len, nSeries = input_tensor.size()
 
         x = self.feature_concat(input_tensor, mask)  # [b, rc, n, s]
         # x_bw = self.feature_concat(input_tensor_bw, mask_bw)  # [b, rc, n, s]
@@ -197,14 +198,12 @@ class GCRINT(torch.nn.Module):
             print('final skip outputs = ', outputs.shape)
 
         outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
-        outputs = self.end_conv_1(outputs)  # [b, h', n, s/L]
-        outputs = torch.nn.functional.relu(outputs)  # [b, h', n, s/L]
-        outputs = self.end_conv_2(outputs)  # [b, s, n, s/L]
-        if self.verbose:
-            print('outputs end_conv = ', outputs.shape)
 
-        outputs = self.linear_out(outputs)  # [b, s, n, 1]
-        outputs = outputs.squeeze(dim=-1)  # [b, s, n]
+        outputs = outputs.reshape(bs, -1, nSeries, )  # [b, gcn_hidden*seq/L, n]
+        outputs = self.end_conv_1(outputs)  # # [b, hidden, n]
+        outputs = torch.nn.functional.relu(outputs)
+        outputs = self.end_conv_2(outputs)  # [b, 1, n]
+        outputs = outputs.squeeze(dim=1)  # [b, n]
 
         if self.verbose:
             print('final outputs = ', outputs.shape)
