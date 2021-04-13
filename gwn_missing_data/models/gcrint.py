@@ -201,9 +201,7 @@ class GCRINT(torch.nn.Module):
                 print('---------------------------------')
 
         outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
-
-        outputs = outputs.reshape(bs, -1, nSeries, )  # [b, gcn_hidden*seq/L, n]
-
+        outputs = outputs.reshape(bs, nSeries, -1)  # [b, gcn_hidden*seq/L, n]
         if self.verbose:
             print('final skip outputs = ', outputs.shape)
 
