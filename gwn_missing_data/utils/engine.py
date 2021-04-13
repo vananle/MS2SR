@@ -44,10 +44,10 @@ class Trainer():
         else:
             output = self.model(x, w)  # now, output = [bs, seq_y, n]
 
-        predict = self.scaler.inverse_transform(output)
+        output = self.scaler.inverse_transform(output)
 
-        loss = self.lossfn(predict, y)
-        rse, mae, mse, mape, rmse = calc_metrics(predict, y)
+        loss = self.lossfn(output, y)
+        rse, mae, mse, mape, rmse = calc_metrics(output, y)
         loss.backward()
 
         if self.clip is not None:

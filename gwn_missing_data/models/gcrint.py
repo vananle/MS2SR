@@ -207,8 +207,9 @@ class GCRINT(torch.nn.Module):
 
         outputs = self.end_linear_1(outputs)  # # [b, hidden, n]
         outputs = torch.nn.functional.relu(outputs)
-        outputs = self.end_linear_2(outputs)  # [b, 1, n]
+        outputs = self.end_linear_2(outputs)  # [b, n, 1]
         # outputs = outputs.squeeze(dim=)  # [b, n]
+        outputs = outputs.transpose(1, 2)  # [b, 1, n]
 
         if self.verbose:
             print('final outputs = ', outputs.shape)
