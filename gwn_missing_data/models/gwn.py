@@ -48,17 +48,12 @@ class GWNet(nn.Module):
         self.addaptadj = addaptadj
         self.verbose = verbose
 
-        if self.cat_feat_gc:
-            self.start_conv = nn.Conv2d(in_channels=1,  # hard code to avoid errors
-                                        out_channels=residual_channels,
-                                        kernel_size=(1, 1))
-            self.cat_feature_conv = nn.Conv2d(in_channels=in_dim - 1,
-                                              out_channels=residual_channels,
-                                              kernel_size=(1, 1))
-        else:
-            self.start_conv = nn.Conv2d(in_channels=in_dim,
-                                        out_channels=residual_channels,
-                                        kernel_size=(1, 1))
+        self.start_conv = nn.Conv2d(in_channels=1,  # hard code to avoid errors
+                                    out_channels=residual_channels,
+                                    kernel_size=(1, 1))
+        self.cat_feature_conv = nn.Conv2d(in_channels=in_dim - 1,
+                                          out_channels=residual_channels,
+                                          kernel_size=(1, 1))
 
         self.fixed_supports = supports or []
         receptive_field = 1
@@ -146,7 +141,7 @@ class GWNet(nn.Module):
 
         # first linear layer
         if x.size(1) > 1:
-            f1, f2 = x[:, [0]], x[:, 1:]
+            f1, f2 = x[:, [0], :, :], x[:, 1:, :, :]
             x1 = self.start_conv(f1)
             x2 = F.leaky_relu(self.cat_feature_conv(f2))
             x = x1 + x2
