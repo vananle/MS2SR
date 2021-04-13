@@ -40,7 +40,7 @@ class Trainer():
 
         y = batch['y']  # [b, seq_y, n]
         if model_type == 'gwn':
-            output = self.model(x)  # now, output = [bs, seq_y, n]
+            output = self.model(x, w)  # now, output = [bs, seq_y, n]
         else:
             output = self.model(x, w)  # now, output = [bs, seq_y, n]
 
@@ -62,7 +62,7 @@ class Trainer():
 
         y = batch['y']  # [b, seq_y, n]
         if model_type == 'gwn':
-            output = self.model(x)  # now, output = [bs, seq_y, n]
+            output = self.model(x, w)  # now, output = [bs, seq_y, n]
         else:
             output = self.model(x, w)  # now, output = [bs, seq_y, n]
 
@@ -85,7 +85,7 @@ class Trainer():
             w = batch['w']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
             if model_type == 'gwn':
-                output = model(x)  # now, output = [bs, seq_y, n]
+                output = model(x, w)  # now, output = [bs, seq_y, n]
             else:
                 output = model(x, w)  # now, output = [bs, seq_y, n]
 
