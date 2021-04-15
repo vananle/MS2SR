@@ -261,7 +261,7 @@ def get_dataloader(args):
 
     X = X[:_size]
     W = W[:_size]
-    print('|--- Missing rate: {}/{}={}'.format(W.sum(), W.size(), float(W.sum() / W.size())))
+    print('|--- Missing rate: {}/{}={}'.format(np.sum(W), np.size(W), float(np.sum(W) / np.size(W))))
 
     splitted_data = train_test_split(X, W)
 
