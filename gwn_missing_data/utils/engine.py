@@ -30,7 +30,7 @@ class Trainer():
         return cls(model, scaler, args.learning_rate, args.weight_decay, clip=args.clip,
                    lr_decay_rate=args.lr_decay_rate, lossfn=args.loss_fn)
 
-    def train(self, batch, model_type):
+    def train(self, batch):
         self.model.train()
         self.optimizer.zero_grad()
         # input = torch.nn.functional.pad(input, (1, 0, 0, 0))
@@ -39,10 +39,7 @@ class Trainer():
         w = batch['w']  # [b, seq_x, n, f]
 
         y = batch['y']  # [b, seq_y, n]
-        if model_type == 'gwn':
-            output = self.model(x, w)  # now, output = [bs, seq_y, n]
-        else:
-            output = self.model(x, w)  # now, output = [bs, seq_y, n]
+        output = self.model(x, w)  # now, output = [bs, seq_y, n]
 
         output = self.scaler.inverse_transform(output)
 
@@ -55,16 +52,13 @@ class Trainer():
         self.optimizer.step()
         return loss.item(), rse.item(), mae.item(), mse.item(), mape.item(), rmse.item()
 
-    def _eval(self, batch, model_type):
+    def _eval(self, batch):
         self.model.eval()
         x = batch['x']  # [b, seq_x, n, f]
         w = batch['w']  # [b, seq_x, n, f]
 
         y = batch['y']  # [b, seq_y, n]
-        if model_type == 'gwn':
-            output = self.model(x, w)  # now, output = [bs, seq_y, n]
-        else:
-            output = self.model(x, w)  # now, output = [bs, seq_y, n]
+        output = self.model(x, w)  # now, output = [bs, seq_y, n]
 
         predict = self.scaler.inverse_transform(output)
 
@@ -74,7 +68,7 @@ class Trainer():
 
         return loss.item(), rse.item(), mae.item(), mse.item(), mape.item(), rmse.item()
 
-    def test(self, test_loader, model, out_seq_len, model_type):
+    def test(self, test_loader, model, out_seq_len):
         model.eval()
         outputs = []
         y_real = []
@@ -84,10 +78,7 @@ class Trainer():
             x = batch['x']  # [b, seq_x, n, f]
             w = batch['w']  # [b, seq_x, n, f]
             y = batch['y']  # [b, seq_y, n]
-            if model_type == 'gwn':
-                output = model(x, w)  # now, output = [bs, seq_y, n]
-            else:
-                output = model(x, w)  # now, output = [bs, seq_y, n]
+            output = model(x, w)  # now, output = [bs, seq_y, n]
 
             preds = self.scaler.inverse_transform(output)  # [bs, seq_y, n]
             outputs.append(preds)
@@ -111,11 +102,11 @@ class Trainer():
         test_met_df = pd.DataFrame(test_met, columns=['rse', 'mae', 'mse', 'mape', 'rmse']).rename_axis('t')
         return test_met_df, x_gt, y_gt, y_real, yhat
 
-    def eval(self, val_loader, model_type):
+    def eval(self, val_loader):
         """Run validation."""
         val_loss, val_rse, val_mae, val_mse, val_mape, val_rmse = [], [], [], [], [], []
         for _, batch in enumerate(val_loader):
-            metrics = self._eval(batch, model_type)
+            metrics = self._eval(batch)
             val_loss.append(metrics[0])
             val_rse.append(metrics[1])
             val_mae.append(metrics[2])
