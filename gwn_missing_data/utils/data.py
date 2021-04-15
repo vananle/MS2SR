@@ -5,8 +5,6 @@ import torch
 from scipy.io import loadmat
 from torch.utils.data import Dataset, DataLoader
 
-from .interp import interp
-
 
 class MinMaxScaler_torch:
 
@@ -96,7 +94,8 @@ class TrafficDatasetMissing(Dataset):
 
         self.X = self.np2torch(np.copy(X))  # ground-truth data (use for generate output y)
         X_obs = X * W  # Missing data
-        X_imp = interp(X_obs, W)  # linear imputed data
+        # X_imp = interp(X_obs, W)  # linear imputed data
+        X_imp = X_obs
 
         self.X_imp = self.np2torch(X_imp)  # linear imputed data
 
