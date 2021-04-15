@@ -79,7 +79,7 @@ def main(args, **model_kwargs):
             for epoch in iterator:
                 train_loss, train_rse, train_mae, train_mse, train_mape, train_rmse = [], [], [], [], [], []
                 for iter, batch in enumerate(train_loader):
-                    loss, rse, mae, mse, mape, rmse = engine.train(batch, args.model)
+                    loss, rse, mae, mse, mape, rmse = engine.train(batch)
                     train_loss.append(loss)
                     train_rse.append(rse)
                     train_mae.append(mae)
@@ -89,7 +89,7 @@ def main(args, **model_kwargs):
 
                 engine.scheduler.step()
                 with torch.no_grad():
-                    val_loss, val_rse, val_mae, val_mse, val_mape, val_rmse = engine.eval(val_loader, args.model)
+                    val_loss, val_rse, val_mae, val_mse, val_mape, val_rmse = engine.eval(val_loader)
                 m = dict(train_loss=np.mean(train_loss), train_rse=np.mean(train_rse),
                          train_mae=np.mean(train_mae), train_mse=np.mean(train_mse),
                          train_mape=np.mean(train_mape), train_rmse=np.mean(train_rmse),
