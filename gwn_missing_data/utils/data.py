@@ -93,7 +93,6 @@ class TrafficDatasetMissing(Dataset):
         self.oX = self.np2torch(self.oX)  # original data
 
         X, W = granularity(X, W, self.k)
-        print('|--- Missing rate: {}/{}={}'.format(W.sum(), W.size(), float(W.sum() / W.size())))
 
         self.X = self.np2torch(np.copy(X))  # ground-truth data (use for generate output y)
         X_obs = X * W  # Missing data
@@ -262,6 +261,7 @@ def get_dataloader(args):
 
     X = X[:_size]
     W = W[:_size]
+    print('|--- Missing rate: {}/{}={}'.format(W.sum(), W.size(), float(W.sum() / W.size())))
 
     splitted_data = train_test_split(X, W)
 
