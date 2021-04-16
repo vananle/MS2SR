@@ -162,14 +162,6 @@ class GCRINT(torch.nn.Module):
                 print('layer {} input = {}'.format(l, in_lstm.shape))
 
             gcn_in = self.lstm_layer(in_lstm, self.cell_fw[l])  # fw lstm  [b, h, n, len]
-
-            # if l == 0:
-            #     in_lstm_bw = x_bw  # [b, rc, n, s]
-            #
-            #     gcn_in_bw = self.lstm_layer(in_lstm_bw, self.lstm_cell_bw)  # bw lstm layer [b, h, n, len]
-            #     gcn_in_bw = torch.flip(gcn_in_bw, dims=[-1])  # flip bw output
-            #     gcn_in = (gcn_in + gcn_in_bw) / 2.0  # combine 2 outputs
-
             gcn_in = torch.tanh(gcn_in)
 
             if self.verbose:
@@ -195,15 +187,14 @@ class GCRINT(torch.nn.Module):
             if self.verbose:
                 print('---------------------------------')
 
-        outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
+        # outputs = torch.nn.functional.relu(outputs)  # [b, gcn_hidden, n, seq/L]
         outputs = outputs.reshape(bs, nSeries, -1)  # [b, gcn_hidden*seq/L, n]
         if self.verbose:
             print('final skip outputs = ', outputs.shape)
 
         outputs = self.end_linear_1(outputs)  # # [b, hidden, n]
-        outputs = torch.nn.functional.relu(outputs)
+        # outputs = torch.nn.functional.relu(outputs)
         outputs = self.end_linear_2(outputs)  # [b, n, 1]
-        # outputs = outputs.squeeze(dim=)  # [b, n]
         outputs = outputs.transpose(1, 2)  # [b, 1, n]
 
         if self.verbose:
