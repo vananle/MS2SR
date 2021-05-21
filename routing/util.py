@@ -37,7 +37,7 @@ def generate_traffic_matrix():
 
 def load_network_topology(dataset):
     # initialize graph
-    G = nx.Graph()
+    G = nx.DiGraph()
     # load node data from csv
     df = pd.read_csv('../../data/topo/{}_node.csv'.format(dataset), delimiter=' ')
     for i, row in df.iterrows():

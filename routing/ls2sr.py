@@ -161,8 +161,7 @@ class LS2SRSolver:
         return np.zeros_like(self.ub)
 
     def g(self, i, j, u, v, k):
-        if (u, v) in self.flow2link[(i, j)][k] or \
-                (v, u) in self.flow2link[(i, j)][k]:
+        if (u, v) in self.flow2link[(i, j)][k]:
             return 1
         return 0
 
@@ -268,7 +267,7 @@ class LS2SRSolver:
     def apply_solution(self, utilizations):
         nx.set_edge_attributes(self.G, utilizations, name='utilization')
 
-    def solve(self, tm, solution=None, eps=1e-8):
+    def solve(self, tm, solution=None, eps=1e-6):
         # save parameters
         self.tm = tm
 
