@@ -23,37 +23,37 @@ def shortest_path(graph, source, target):
     return nx.shortest_path(graph, source=source, target=target, weight='weight')
 
 
-def remove_duplicated_path(paths):
-    # convert path to string
-    paths = ['-'.join('{}/{}'.format(u, v) for u, v in path) for path in paths]
-    # remove duplicated string
-    paths = list(set(paths))
-    # convert string to path
-    new_paths = []
-    for path in paths:
-        new_path = []
-        for edge_str in path.split('-'):
-            u, v = edge_str.split('/')
-            u, v = int(u), int(v)
-            new_path.append((u, v))
-        new_paths.append(new_path)
-    return new_paths
+# def remove_duplicated_path(paths):
+#     # convert path to string
+#     paths = ['-'.join('{}/{}'.format(u, v) for u, v in path) for path in paths]
+#     # remove duplicated string
+#     paths = list(set(paths))
+#     # convert string to path
+#     new_paths = []
+#     for path in paths:
+#         new_path = []
+#         for edge_str in path.split('-'):
+#             u, v = edge_str.split('/')
+#             u, v = int(u), int(v)
+#             new_path.append((u, v))
+#         new_paths.append(new_path)
+#     return new_paths
 
 
-def is_simple_path(path):
-    """
-    input:
-        - path: which is a list of edges (u, v)
-    return:
-        - is_simple_path: bool
-    """
-    edges = []
-    for edge in path:
-        edge = tuple(sorted(edge))
-        if edge in edges:
-            return False
-        edges.append(edge)
-    return True
+# def is_simple_path(path):
+#     """
+#     input:
+#         - path: which is a list of edges (u, v)
+#     return:
+#         - is_simple_path: bool
+#     """
+#     edges = []
+#     for edge in path:
+#         edge = tuple(sorted(edge))
+#         if edge in edges:
+#             return False
+#         edges.append(edge)
+#     return True
 
 
 def edge_in_path(edge, path):
@@ -62,8 +62,8 @@ def edge_in_path(edge, path):
         - edge: tuple (u, v)
         - path: list of tuple (u, v)
     """
-    sorted_path_edges = [tuple(sorted(path_edge)) for path_edge in path]
-    if edge in sorted_path_edges:
+    # sorted_path_edges = [tuple(sorted(path_edge)) for path_edge in path]
+    if edge in path:
         return True
     return False
 
