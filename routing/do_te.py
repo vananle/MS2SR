@@ -186,7 +186,7 @@ def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
     solver = LS2SRSolver(G, time_limit=1, verbose=args.verbose)
 
     solution = None
-    dynamicity = np.zeros(shape=(te_step, 6))
+    dynamicity = np.zeros(shape=(te_step, 7))
     for i in range(te_step):
         mean = np.mean(y_gt[i], axis=1)
         std_mean = np.std(mean)
