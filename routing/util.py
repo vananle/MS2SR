@@ -148,7 +148,7 @@ def save(path, obj):
 
 
 def compute_path(graph, args):
-    folder = '../data/topo'
+    folder = '../../data/topo'
     if not os.path.exists(folder):
         os.makedirs(folder)
     path = os.path.join(folder, '{}_segments_digraph.pkl'.format(args.dataset))
