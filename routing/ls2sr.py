@@ -93,7 +93,6 @@ class LS2SRSolver:
         # cache
         self.tm = None
 
-
     # -----------------------------------------------------------------------------------------------------------------
     def sort_paths(self, paths):
         weights = [[sum(self.G.get_edge_data(u, v)['weight'] for u, v in path)] for path in paths]
