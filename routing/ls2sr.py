@@ -71,6 +71,8 @@ def edge_in_path(edge, path):
 class LS2SRSolver:
 
     def __init__(self, graph, args):
+        self.args = args
+
         # save parameters
         self.G = graph
         self.N = graph.number_of_nodes()
@@ -91,7 +93,6 @@ class LS2SRSolver:
         # cache
         self.tm = None
 
-        self.args = args
 
     # -----------------------------------------------------------------------------------------------------------------
     def sort_paths(self, paths):
