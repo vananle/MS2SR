@@ -178,8 +178,8 @@ def g(segments, i, j, k, u, v):
     if len(segments[i, j][k][1]) != 0 and (u, v) in segments[i, j][k][1]:
         value += 1
 
-    if value == 2:
-        value = 100
+    # if value == 2:
+    #     value = 100
     return value
 
 
