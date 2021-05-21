@@ -77,6 +77,7 @@ def get_args():
 
     # parameter for test_routing
     parser.add_argument('--run_te', action='store_true')
+    parser.add_argument('--timeout', type=float, default=10.0)
 
     # parser.add_argument('--test_routing', type=str, default='sr',
     #                     choices=['sr', 'sp', 'or', 'ta'])
