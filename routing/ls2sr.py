@@ -1,10 +1,22 @@
 import itertools
 import os
+import pickle
 import time
 
 import networkx as nx
 import numpy as np
 from joblib import delayed, Parallel
+
+
+def load(path):
+    with open(path, 'rb') as fp:
+        obj = pickle.load(fp)
+    return obj
+
+
+def save(path, obj):
+    with open(path, 'wb') as fp:
+        pickle.dump(obj, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def shortest_path(graph, source, target):
@@ -58,19 +70,19 @@ def edge_in_path(edge, path):
 
 class LS2SRSolver:
 
-    def __init__(self, graph, time_limit=10, verbose=False):
+    def __init__(self, graph, args):
         # save parameters
         self.G = graph
         self.N = graph.number_of_nodes()
         self.n_edges = len(self.G.edges)
         self.indices_edge = np.arange(self.n_edges)
 
-        self.time_limit = time_limit
-        self.verbose = verbose
+        self.timeout = args.timeout
+        self.verbose = args.verbose
 
         # compute paths
         self.link2flow = None
-        self.flow2link = self.initialize_flow2link()
+        self.compute_path()
         self.ub = self.get_solution_bound(self.flow2link)
 
         # data for selecting next link -> demand to be mutate
@@ -149,6 +161,35 @@ class LS2SRSolver:
             flow2link[i, j] = list_paths[i * self.N + j]
 
         return flow2link
+
+    def initialize_link2flow(self):
+        """
+        link2flow is a dictionary:
+            - key: link id (u, v)
+            - value: list of flows id (i, j)
+        """
+        link2flow = {}
+        for u, v in self.G.edges:
+            link2flow[(u, v)] = []
+        return link2flow
+
+    def compute_path(self):
+        folder = '../data/topo/ls2sr/precompute_path'
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        path = os.path.join(folder, '{}.pkl'.format(self.args.dataset))
+        if os.path.exists(path):
+            data = load(path)
+            self.link2flow = None
+            self.flow2link = data['flow2link']
+        else:
+            self.link2flow = self.initialize_link2flow()
+            self.flow2link = self.initialize_flow2link()
+            data = {
+                'link2flow': self.link2flow,
+                'flow2link': self.flow2link,
+            }
+            save(path, data)
 
     def get_solution_bound(self, flow2link):
         ub = np.empty([self.N, self.N], dtype=int)
@@ -243,10 +284,8 @@ class LS2SRSolver:
 
         # accumulate the utilization
         for u, v in best_path:
-            # u, v = sorted([u, v])
             utilizations[(u, v)] -= self.tm[i, j] / self.G[u][v]['capacity']
         for u, v in new_path:
-            # u, v = sorted([u, v])
             utilizations[(u, v)] += self.tm[i, j] / self.G[u][v]['capacity']
 
         return utilizations
@@ -283,7 +322,7 @@ class LS2SRSolver:
 
         # iteratively solve
         tic = time.time()
-        while time.time() - tic < self.time_limit:
+        while time.time() - tic < self.timeout:
             i, j = self.select_flow()
             if i == j:
                 continue
