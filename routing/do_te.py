@@ -193,7 +193,7 @@ def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
         std = np.std(y_gt[i], axis=1)
         std_std = np.std(std)
 
-        maxmax_mean = np.max(y_gt[i]) / np / mean(y_gt[i])
+        maxmax_mean = np.max(y_gt[i]) / np.mean(y_gt[i])
 
         theo_lamda = calculate_lamda(y_gt=y_gt[i])
 
