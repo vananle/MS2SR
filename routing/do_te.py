@@ -99,14 +99,9 @@ def oblivious_routing_solver(y_gt, G, segments, te_step, args):
 def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
     solver = OneStepSRSolver(G, segments)
 
-    def f(gt_tms, tms, last_tm):
-        tms = tms.reshape((-1, args.nNodes, args.nNodes))
+    def f(gt_tms, last_tm):
         gt_tms = gt_tms.reshape((-1, args.nNodes, args.nNodes))
-
-        tms[tms <= 0.0] = 0.0
         gt_tms[gt_tms <= 0.0] = 0.0
-
-        tms[:] = tms[:] * (1.0 - np.eye(args.nNodes))
         gt_tms[:] = gt_tms[:] * (1.0 - np.eye(args.nNodes))
 
         last_tm[last_tm <= 0.0] = 0.0
@@ -115,8 +110,8 @@ def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
 
         return last_step_sr(solver, last_tm, gt_tms)
 
-    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(
-        tms=y_gt[i], gt_tms=y_gt[i], last_tm=x_gt[i][-1]) for i in range(te_step))
+    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], last_tm=x_gt[i][-1])
+                                                  for i in range(te_step))
 
     mlu, solution = extract_results(results)
     rc = get_route_changes(solution, G)
