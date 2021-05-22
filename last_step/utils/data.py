@@ -144,8 +144,8 @@ def train_test_split(X):
     val_size = int(X.shape[0] * 0.1)
     test_size = X.shape[0] - train_size - val_size
 
-    if train_size >= 5000:
-        train_size = 5000
+    if train_size >= 7000:
+        train_size = 7000
     if val_size >= 1000:
         val_size = 1000
 
