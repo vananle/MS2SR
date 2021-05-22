@@ -23,46 +23,12 @@ def shortest_path(graph, source, target):
     return nx.shortest_path(graph, source=source, target=target, weight='weight')
 
 
-# def remove_duplicated_path(paths):
-#     # convert path to string
-#     paths = ['-'.join('{}/{}'.format(u, v) for u, v in path) for path in paths]
-#     # remove duplicated string
-#     paths = list(set(paths))
-#     # convert string to path
-#     new_paths = []
-#     for path in paths:
-#         new_path = []
-#         for edge_str in path.split('-'):
-#             u, v = edge_str.split('/')
-#             u, v = int(u), int(v)
-#             new_path.append((u, v))
-#         new_paths.append(new_path)
-#     return new_paths
-
-
-# def is_simple_path(path):
-#     """
-#     input:
-#         - path: which is a list of edges (u, v)
-#     return:
-#         - is_simple_path: bool
-#     """
-#     edges = []
-#     for edge in path:
-#         edge = tuple(sorted(edge))
-#         if edge in edges:
-#             return False
-#         edges.append(edge)
-#     return True
-
-
 def edge_in_path(edge, path):
     """
     input:
         - edge: tuple (u, v)
         - path: list of tuple (u, v)
     """
-    # sorted_path_edges = [tuple(sorted(path_edge)) for path_edge in path]
     if edge in path:
         return True
     return False
@@ -201,7 +167,7 @@ class LS2SRSolver:
         return ub
 
     def initialize(self):
-        return np.zeros_like(self.ub)
+        return np.zeros(shape=(self.N, self.N), dtype=int)
 
     def g(self, i, j, u, v, k):
         if (u, v) in self.flow2link[(i, j)][k]:
@@ -214,7 +180,7 @@ class LS2SRSolver:
         return False
 
     def set_link_selection_prob(self, alpha=16):
-        # extract parameters
+        # compute the prob
         utilizations = nx.get_edge_attributes(self.G, 'utilization').values()
         utilizations = np.array(list(utilizations))
         self.link_selection_prob = utilizations ** alpha / np.sum(utilizations ** alpha)
@@ -227,15 +193,17 @@ class LS2SRSolver:
         return demands ** beta / np.sum(demands ** beta)
 
     def select_flow(self):
-        # extract parameters
         # select link
         self.set_link_selection_prob()
-
-        index = np.random.choice(self.indices_edge, p=self.link_selection_prob)
+        idx_sort = np.argsort(self.link_selection_prob)[-int(0.2 * len(self.indices_edge)):]
+        indices_edge = self.indices_edge[idx_sort]
+        index = np.random.choice(indices_edge)
         link = list(self.G.edges)[index]
+
         # select flow
         flow_prob = self.set_flow_selection_prob(link[0], link[1])
         indices = np.arange(len(self.link2flow[link]))
+
         index = np.random.choice(indices, p=flow_prob)
         flow = self.link2flow[link][index]
         return flow
