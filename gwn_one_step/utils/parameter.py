@@ -136,7 +136,7 @@ def print_args(args):
     print('    - addaptadj              :', args.addaptadj)
     print('    - randomadj              :', args.randomadj)
     print('----------------------------')
-    print('    - type                   :', args.type)
+    print('    - type                   :', 'onestep')
     print('    - seq_len_x              :', args.seq_len_x)
     print('    - seq_len_y              :', args.seq_len_y)
     print('    - out_seq_len            :', args.out_seq_len)
