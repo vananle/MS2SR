@@ -122,7 +122,7 @@ def main(args, **model_kwargs):
         logger.plot(x_gt, y_real, yhat)
 
     # run TE
-    if args.run_te:
+    if args.run_te != 'None':
         x_gt = x_gt.cpu().data.numpy()  # [timestep, seq_x, seq_y]
         y_gt = y_gt.cpu().data.numpy()
         yhat = yhat.cpu().data.numpy()

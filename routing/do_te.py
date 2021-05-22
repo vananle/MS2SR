@@ -465,10 +465,17 @@ def run_te(x_gt, y_gt, yhat, args):
     te_step = x_gt.shape[0]
     print('    Method           |   Min     Avg    Max     std')
 
-    ls2sr_p2(yhat, y_gt, x_gt, graph, segments, te_step, args)
-    optimal_p1_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
-    optimal_p2_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
-    optimal_p3_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
-    one_step_predicted_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
-    last_step_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
-    oblivious_routing_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+    if args.run_te == 'ls2sr':
+        ls2sr_p2(yhat, y_gt, x_gt, graph, segments, te_step, args)
+    elif args.run_te == 'p1':
+        optimal_p1_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+    elif args.run_te == 'p2':
+        optimal_p2_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+    elif args.run_te == 'p3':
+        optimal_p3_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+    elif args.run_te == 'onestep':
+        one_step_predicted_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+    elif args.run_te == 'laststep':
+        last_step_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+    elif args.run_te == 'or':
+        oblivious_routing_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
