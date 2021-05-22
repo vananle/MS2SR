@@ -122,6 +122,7 @@ def main(args, **model_kwargs):
 
     # run TE
     if args.run_te != 'None':
+        args.run_te = 'onestep'
         x_gt = x_gt.cpu().data.numpy()  # [timestep, seq_x, seq_y]
         y_gt = y_gt.cpu().data.numpy()
         yhat = yhat.cpu().data.numpy()
