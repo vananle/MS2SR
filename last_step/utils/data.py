@@ -173,7 +173,7 @@ def get_dataloader(args):
     train, val, test_list = train_test_split(X)
 
     # Training set
-    train_set = TrafficDataset(train, args=args, scaler=None)
+    train_set = TrafficDataset(train, args=args)
     train_loader = DataLoader(train_set,
                               batch_size=args.train_batch_size,
                               shuffle=True)
