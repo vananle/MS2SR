@@ -70,7 +70,7 @@ def prepare_te_data(x_gt, y_gt, yhat, args):
     return x_gt, y_gt, yhat
 
 
-def oblivious_routing_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def oblivious_routing_solver(y_gt, G, segments, te_step, args):
     solver = ObliviousRoutingSolver(G, segments)
     solver.solve()
     print('Solving Obilious Routing: Done')
@@ -96,7 +96,7 @@ def oblivious_routing_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'oblivious', mlu, rc)
 
 
-def last_step_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
     solver = OneStepSRSolver(G, segments)
 
     def f(gt_tms, tms, last_tm):
@@ -130,7 +130,7 @@ def last_step_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'last_step', mlu, rc)
 
 
-def one_step_predicted_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def one_step_predicted_solver(yhat, y_gt, G, segments, te_step, args):
     solver = OneStepSRSolver(G, segments)
 
     def f(gt_tms, tm):
@@ -180,7 +180,7 @@ def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'p0_ls2sr', mlu, rc)
 
 
-def ls2sr_p2(yhat, y_gt, x_gt, G, segments, te_step, args):
+def ls2sr_p2(yhat, y_gt, G, te_step, args):
     print('ls2sr solver')
     results = []
     solver = LS2SRSolver(graph=G, args=args)
@@ -242,7 +242,7 @@ def optimal_p0_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'p0_optimal', mlu, rc)
 
 
-def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def optimal_p1_solver(y_gt, G, segments, te_step, args):
     solver = MultiStepSRSolver(G, segments)
 
     def f(gt_tms, tms):
@@ -270,7 +270,7 @@ def optimal_p1_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'p1_optimal', mlu_optimal_p1, route_changes_p1)
 
 
-def optimal_p2_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def optimal_p2_solver(y_gt, G, segments, te_step, args):
     solver = MaxStepSRSolver(G, segments)
 
     def f(gt_tms, tms):
@@ -300,7 +300,7 @@ def optimal_p2_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'p2_optimal', mlu_optimal_p2, route_changes_p2)
 
 
-def optimal_p3_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def optimal_p3_solver(y_gt, G, segments, te_step, args):
     t_prime = int(args.seq_len_y / args.trunk)
     solver = MultiStepSRSolver(G, segments)
 
@@ -466,16 +466,18 @@ def run_te(x_gt, y_gt, yhat, args):
     print('    Method           |   Min     Avg    Max     std')
 
     if args.run_te == 'ls2sr':
-        ls2sr_p2(yhat, y_gt, x_gt, graph, segments, te_step, args)
+        ls2sr_p2(yhat, y_gt, graph, te_step, args)
     elif args.run_te == 'p1':
-        optimal_p1_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+        optimal_p1_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p2':
-        optimal_p2_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+        optimal_p2_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p3':
-        optimal_p3_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+        optimal_p3_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'onestep':
-        one_step_predicted_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+        one_step_predicted_solver(yhat, y_gt, graph, segments, te_step, args)
     elif args.run_te == 'laststep':
-        last_step_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+        last_step_solver(y_gt, x_gt, graph, segments, te_step, args)
     elif args.run_te == 'or':
-        oblivious_routing_solver(yhat, y_gt, x_gt, graph, segments, te_step, args)
+        oblivious_routing_solver(y_gt, graph, segments, te_step, args)
+    else:
+        raise RuntimeError('TE not found!')
