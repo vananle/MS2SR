@@ -254,8 +254,8 @@ def get_dataloader(args):
     train, val, test = train_test_split(X)
 
     # use latest data for training
-    if train.shape[0] > 5000:
-        train = train[-5000:]
+    # if train.shape[0] > 5000:
+    #     train = train[-5000:]
 
     # Training set
     train_set = TrafficDataset(train, args=args, scaler=None)
