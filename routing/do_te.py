@@ -65,7 +65,8 @@ def prepare_te_data(x_gt, y_gt, yhat, args):
     if x_gt.shape[0] > nsteps * 2:
         x_gt = x_gt[0:te_step:args.seq_len_y]
         y_gt = y_gt[0:te_step:args.seq_len_y]
-        yhat = yhat[0:te_step:args.seq_len_y]
+        if args.run_te == 'ls2sr' or args.run_te == 'laststep':
+            yhat = yhat[0:te_step:args.seq_len_y]
 
     return x_gt, y_gt, yhat
 
@@ -155,7 +156,7 @@ def one_step_predicted_solver(yhat, y_gt, G, segments, te_step, args):
 
 def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
     print('P0 Heuristic solver')
-    solver = LS2SRSolver(G, time_limit=10, verbose=args.verbose)
+    solver = LS2SRSolver(G, args=args)
 
     results = Parallel(n_jobs=os.cpu_count() - 8)(delayed(p0_ls2sr)(
         solver=solver, tms=y_gt[i], gt_tms=y_gt[i], p_solution=None, nNodes=args.nNodes)
