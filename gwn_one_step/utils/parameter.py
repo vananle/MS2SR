@@ -93,14 +93,7 @@ def get_args():
     if args.seq_len_x <= 45:
         args.blocks = 3
 
-    if args.type == 'p1':
-        args.out_seq_len = args.seq_len_y
-    elif args.type == 'p2':
-        args.out_seq_len = 1
-    elif args.type == 'p3':
-        if args.seq_len_y % args.trunk != 0:
-            args.seq_len_y = int(args.seq_len_y / args.trunk) * args.trunk
-        args.out_seq_len = args.trunk
+    args.out_seq_len = 1
 
     return args
 
