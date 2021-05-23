@@ -82,9 +82,6 @@ def get_path(graph, i, j, k):
         edges_ik.append((u, v))
     for u, v in zip(p_kj[:-1], p_kj[1:]):
         edges_kj.append((u, v))
-    print('{}  -   {}   -  {}'.format(i, k, j))
-    print(edges_ik)
-    print(edges_kj)
     return edges_ik, edges_kj
 
 
