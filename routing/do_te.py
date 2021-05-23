@@ -123,7 +123,7 @@ def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
                                                                             np.max(mlu),
                                                                             np.std(mlu)))
 
-    save_results(args.log_dir, 'last_step', mlu, rc)
+    save_results(args.log_dir, 'no_prediction', mlu, rc)
 
 
 def one_step_predicted_solver(yhat, y_gt, G, segments, te_step, args):
@@ -138,7 +138,7 @@ def one_step_predicted_solver(yhat, y_gt, G, segments, te_step, args):
         tm = tm.reshape((args.nNodes, args.nNodes))
         tm = tm * (1.0 - np.eye(args.nNodes))
 
-        return one_step_predicted_sr(solver, tm, gt_tms)
+        return one_step_predicted_sr(solver=solver, tm=tm, gt_tms=gt_tms)
 
     results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], tm=yhat[i][0]) for i in range(te_step))
 
