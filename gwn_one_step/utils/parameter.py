@@ -10,7 +10,7 @@ def get_args():
     # parameter for dataset
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--dataset', type=str, default='abilene_tm',
-                        choices=['abilene_tm', 'geant_tm', 'brain_tm'],
+                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'Renater2004', 'Surfnet', 'Ulaknet'],
                         help='Dataset, (default abilene_tm)')
     parser.add_argument('--testset', type=int, default=0,
                         choices=[0, 1, 2],
