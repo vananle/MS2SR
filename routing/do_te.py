@@ -215,7 +215,7 @@ def ls2sr_p2(yhat, y_gt, G, te_step, args):
     np.save(os.path.join(args.log_dir, 'ls2sr_p2_dyn'), dynamicity)
 
 
-def optimal_p0_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
+def optimal_p0_solver(y_gt, G, segments, te_step, args):
     solver = OneStepSRSolver(G, segments)
 
     def f(gt_tms):
@@ -223,7 +223,7 @@ def optimal_p0_solver(yhat, y_gt, x_gt, G, segments, te_step, args):
         gt_tms[gt_tms <= 0.0] = 0.0
         gt_tms[:] = gt_tms[:] * (1.0 - np.eye(args.nNodes))
 
-        return optimal_sr(solver, gt_tms)
+        return p0(solver, gt_tms)
 
     results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i]) for i in range(te_step))
 
@@ -428,7 +428,7 @@ def one_step_predicted_sr(solver, tm, gt_tms):
     return u, solver.solution
 
 
-def optimal_sr(solver, gt_tms):
+def p0(solver, gt_tms):
     u = []
     solutions = []
     for i in range(gt_tms.shape[0]):
@@ -452,9 +452,9 @@ def oblivious_sr(solver, tms):
 
 
 def run_te(x_gt, y_gt, yhat, args):
-    graph = load_network_topology(args.dataset)
+    graph = load_network_topology(args.dataset, args.datapath)
 
-    segments = compute_path(graph, args)
+    segments = compute_path(graph, args.dataset, args.datapath)
 
     x_gt, y_gt, yhat = prepare_te_data(x_gt, y_gt, yhat, args)
 
@@ -463,6 +463,8 @@ def run_te(x_gt, y_gt, yhat, args):
 
     if args.run_te == 'ls2sr':
         ls2sr_p2(yhat, y_gt, graph, te_step, args)
+    elif args.run_te == 'p0':
+        optimal_p0_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p1':
         optimal_p1_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p2':
