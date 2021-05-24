@@ -37,8 +37,8 @@ def main(args, **model_kwargs):
     elif 'surfnet' in args.dataset:
         args.nNodes = 50
         args.day_size = 288
-    elif 'ulaknet' in args.dataset:
-        args.nNodes = 80
+    elif 'uninett' in args.dataset:
+        args.nNodes = 74
         args.day_size = 288
     else:
         raise ValueError('Dataset not found!')
