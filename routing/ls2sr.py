@@ -147,6 +147,7 @@ class LS2SRSolver:
             os.makedirs(folder)
         path = os.path.join(folder, '{}.pkl'.format(self.args.dataset))
         if os.path.exists(path):
+            print('|--- Load precomputed segment from {}'.format(path))
             data = load(path)
             self.link2flow = None
             self.flow2link = data['flow2link']

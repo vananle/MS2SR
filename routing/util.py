@@ -155,6 +155,7 @@ def compute_path(graph, dataset, datapath):
         os.makedirs(folder)
     path = os.path.join(folder, '{}_segments_digraph.pkl'.format(dataset))
     if os.path.exists(path):
+        print('|--- Load precomputed segment from {}'.format(path))
         data = load(path)
         segments = data['segments']
     else:
