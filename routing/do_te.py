@@ -454,7 +454,6 @@ def oblivious_sr(solver, tms):
 def run_te(x_gt, y_gt, yhat, args):
     graph = load_network_topology(args.dataset, args.datapath)
 
-    segments = compute_path(graph, args.dataset, args.datapath)
 
     x_gt, y_gt, yhat = prepare_te_data(x_gt, y_gt, yhat, args)
 
@@ -464,18 +463,25 @@ def run_te(x_gt, y_gt, yhat, args):
     if args.run_te == 'ls2sr':
         ls2sr_p2(yhat, y_gt, graph, te_step, args)
     elif args.run_te == 'p0':
+        segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p0_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p1':
+        segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p1_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p2':
+        segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p2_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p3':
+        segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p3_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'onestep':
+        segments = compute_path(graph, args.dataset, args.datapath)
         one_step_predicted_solver(yhat, y_gt, graph, segments, te_step, args)
     elif args.run_te == 'laststep':
+        segments = compute_path(graph, args.dataset, args.datapath)
         last_step_solver(y_gt, x_gt, graph, segments, te_step, args)
     elif args.run_te == 'or':
+        segments = compute_path(graph, args.dataset, args.datapath)
         oblivious_routing_solver(y_gt, graph, segments, te_step, args)
     else:
         raise RuntimeError('TE not found!')
