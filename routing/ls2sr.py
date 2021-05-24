@@ -152,6 +152,7 @@ class LS2SRSolver:
             self.link2flow = None
             self.flow2link = data['flow2link']
         else:
+            print('|--- Compute segment and save to {}'.format(path))
             self.link2flow = self.initialize_link2flow()
             self.flow2link = self.initialize_flow2link()
             data = {
