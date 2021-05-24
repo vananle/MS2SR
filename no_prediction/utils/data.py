@@ -149,8 +149,8 @@ def train_test_split(X):
     if val_size >= 1000:
         val_size = 1000
 
-    if test_size >= 2000:
-        test_size = 2000
+    if test_size >= 1000:
+        test_size = 1000
 
     X_train = X[:train_size]
 
