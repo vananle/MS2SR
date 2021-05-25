@@ -111,8 +111,8 @@ def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
 
         return last_step_sr(solver, last_tm, gt_tms)
 
-    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], last_tm=x_gt[i, -1, :])
-                                                  for i in range(te_step))
+    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], last_tm=x_gt[i, -1, ...])
+                                                  for i in range(x_gt.shape[0]))
 
     mlu, solution = extract_results(results)
     rc = get_route_changes(solution, G)
@@ -125,7 +125,7 @@ def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
     congested = mlu[mlu > 1.0].size
     print('Congestion_rate: {}/{}'.format(congested, mlu.size))
 
-    save_results(args.log_dir, 'no_prediction', mlu, rc)
+    save_results(args.log_dir, 'laststep', mlu, rc)
 
 
 def first_step_solver(y_gt, G, segments, te_step, args):
@@ -327,7 +327,7 @@ def optimal_p2_solver(y_gt, G, segments, te_step, args):
         return p2(solver, tms=tms, gt_tms=gt_tms)
 
     results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(
-        tms=np.max(y_gt[i], axis=0, keepdims=True), gt_tms=y_gt[i]) for i in range(te_step))
+        gt_tms=y_gt[i], tms=np.max(y_gt[i], axis=0, keepdims=True)) for i in range(te_step))
 
     mlu, solution_optimal_p2 = extract_results(results)
     rc = get_route_changes(solution_optimal_p2, G)

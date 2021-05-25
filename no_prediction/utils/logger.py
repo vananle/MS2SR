@@ -29,9 +29,9 @@ def display_stats(stats):
 class Logger:
 
     def __init__(self, args):
-        log_dir = '../../logs/im2021/{}_{}.{}_{}_{}_{}_laststep'.format(args.model, args.dataset, args.k,
-                                                                        args.seq_len_x,
-                                                                        args.seq_len_y, args.loss_fn)
+        log_dir = '../../logs/im2021/{}_{}.{}_{}_{}_{}_no_prediction'.format(args.model, args.dataset, args.k,
+                                                                             args.seq_len_x,
+                                                                             args.seq_len_y, args.loss_fn)
         if args.tod:
             log_dir = log_dir + '_tod'
         if args.ma:
