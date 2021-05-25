@@ -519,7 +519,7 @@ def run_te(x_gt, y_gt, yhat, args):
         last_step_solver(y_gt, x_gt, graph, segments, te_step, args)
     elif args.run_te == 'firststep':
         segments = compute_path(graph, args.dataset, args.datapath)
-        first_step_solver(y_gt, x_gt, graph, segments, te_step, args)
+        first_step_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'or':
         segments = compute_path(graph, args.dataset, args.datapath)
         oblivious_routing_solver(y_gt, graph, segments, te_step, args)
