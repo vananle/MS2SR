@@ -108,8 +108,6 @@ def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
 
         return last_step_sr(solver, last_tm, gt_tms)
 
-    # results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], last_tm=y_gt[i, 0, ...])
-    #                                               for i in range(te_step))
     results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], last_tm=x_gt[i, -1, :])
                                                   for i in range(te_step))
 
@@ -123,6 +121,35 @@ def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
                                                                             np.std(mlu)))
 
     save_results(args.log_dir, 'no_prediction', mlu, rc)
+
+
+def first_step_solver(y_gt, G, segments, te_step, args):
+    solver = OneStepSRSolver(G, segments)
+
+    def f(gt_tms, first_tm):
+        gt_tms = gt_tms.reshape((-1, args.nNodes, args.nNodes))
+        gt_tms[gt_tms <= 0.0] = 0.0
+        gt_tms[:] = gt_tms[:] * (1.0 - np.eye(args.nNodes))
+
+        first_tm[first_tm <= 0.0] = 0.0
+        first_tm = first_tm.reshape((args.nNodes, args.nNodes))
+        first_tm = first_tm * (1.0 - np.eye(args.nNodes))
+
+        return first_step_sr(solver, first_tm, gt_tms)
+
+    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], first_tm=y_gt[i, 0, ...])
+                                                  for i in range(te_step))
+
+    mlu, solution = extract_results(results)
+    rc = get_route_changes(solution, G)
+    print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(rc),
+                                                        np.std(rc)))
+    print('first-step            | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu),
+                                                                             np.mean(mlu),
+                                                                             np.max(mlu),
+                                                                             np.std(mlu)))
+
+    save_results(args.log_dir, 'first_step', mlu, rc)
 
 
 def one_step_predicted_solver(yhat, y_gt, G, segments, te_step, args):
@@ -415,6 +442,18 @@ def last_step_sr(solver, last_tm, gt_tms):
     return u, solver.solution
 
 
+def first_step_sr(solver, first_tm, gt_tms):
+    u = []
+    try:
+        solver.solve(first_tm)
+    except:
+        pass
+
+    for i in range(gt_tms.shape[0]):
+        u.append(solver.evaluate(gt_tms[i]))
+    return u, solver.solution
+
+
 def one_step_predicted_sr(solver, tm, gt_tms):
     u = []
     try:
@@ -478,6 +517,9 @@ def run_te(x_gt, y_gt, yhat, args):
     elif args.run_te == 'laststep':
         segments = compute_path(graph, args.dataset, args.datapath)
         last_step_solver(y_gt, x_gt, graph, segments, te_step, args)
+    elif args.run_te == 'firststep':
+        segments = compute_path(graph, args.dataset, args.datapath)
+        first_step_solver(y_gt, x_gt, graph, segments, te_step, args)
     elif args.run_te == 'or':
         segments = compute_path(graph, args.dataset, args.datapath)
         oblivious_routing_solver(y_gt, graph, segments, te_step, args)
