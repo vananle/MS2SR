@@ -16,12 +16,7 @@ def get_args():
                         choices=[0, 1, 2],
                         help='Test set, (default 0)')
     parser.add_argument('--datapath', type=str, default='../../data')
-    parser.add_argument('--trunk', type=int, default=3, help='trunk for p3 problem (default 3)')
     parser.add_argument('--k', type=int, default=1, help='granularity scale', choices=[1, 2, 3])
-
-    parser.add_argument('--tod', action='store_true')
-    parser.add_argument('--ma', action='store_true')
-    parser.add_argument('--mx', action='store_true')
 
     # Model
     # Graph
@@ -140,9 +135,6 @@ def print_args(args):
     print('    - seq_len_x              :', args.seq_len_x)
     print('    - seq_len_y              :', args.seq_len_y)
     print('    - out_seq_len            :', args.out_seq_len)
-    print('    - tod                    :', args.tod)
-    print('    - ma                     :', args.ma)
-    print('    - mx                     :', args.mx)
     print('---------------------------------------------------------')
     print('    - device                 :', args.device)
     print('    - train_batch_size       :', args.train_batch_size)

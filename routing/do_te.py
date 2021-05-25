@@ -111,8 +111,10 @@ def last_step_solver(y_gt, x_gt, G, segments, te_step, args):
 
         return last_step_sr(solver, last_tm, gt_tms)
 
-    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], last_tm=x_gt[i][-1])
+    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], last_tm=y_gt[i, 0, ...])
                                                   for i in range(te_step))
+    # results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], last_tm=x_gt[i, -1, :])
+    #                                               for i in range(te_step))
 
     mlu, solution = extract_results(results)
     rc = get_route_changes(solution, G)
@@ -140,7 +142,7 @@ def one_step_predicted_solver(yhat, y_gt, G, segments, te_step, args):
 
         return one_step_predicted_sr(solver=solver, tm=tm, gt_tms=gt_tms)
 
-    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], tm=yhat[i][0]) for i in range(te_step))
+    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(gt_tms=y_gt[i], tm=yhat[i]) for i in range(te_step))
 
     mlu, solutions = extract_results(results)
     rc = get_route_changes(solutions, G)
@@ -453,7 +455,6 @@ def oblivious_sr(solver, tms):
 
 def run_te(x_gt, y_gt, yhat, args):
     graph = load_network_topology(args.dataset, args.datapath)
-
 
     x_gt, y_gt, yhat = prepare_te_data(x_gt, y_gt, yhat, args)
 

@@ -27,6 +27,7 @@ class Trainer():
 
     @classmethod
     def from_args(cls, model, scaler, args):
+        print('[Onestep] Create training engine')
         return cls(model, scaler, args.learning_rate, args.weight_decay, clip=args.clip,
                    lr_decay_rate=args.lr_decay_rate, lossfn=args.loss_fn)
 

@@ -32,12 +32,6 @@ class Logger:
         log_dir = '../../logs/im2021/{}_{}.{}_{}_{}_{}_one_step'.format(args.model, args.dataset, args.k,
                                                                         args.seq_len_x,
                                                                         args.seq_len_y, args.loss_fn)
-        if args.tod:
-            log_dir = log_dir + '_tod'
-        if args.ma:
-            log_dir = log_dir + '_ma'
-        if args.mx:
-            log_dir = log_dir + '_mx'
 
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)

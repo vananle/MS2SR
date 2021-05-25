@@ -78,6 +78,7 @@ class TrafficDataset(Dataset):
         # save parameters
         self.args = args
 
+        self.type = args.type
         self.out_seq_len = args.out_seq_len
         self.trunk = args.trunk
         self.k = args.k  # granularity
@@ -101,11 +102,47 @@ class TrafficDataset(Dataset):
         # transform if needed and convert to torch
         self.X_scaled = self.scaler.transform(self.X)
 
+        if args.tod:
+            self.tod = self.get_tod()
+
+        if args.ma:
+            self.ma = self.get_ma()
+
+        if args.mx:
+            self.mx = self.get_mx()
+
         # get valid start indices for sub-series
         self.indices = self.get_indices()
 
         if torch.isnan(self.X).any():
             raise ValueError('Data has Nan')
+
+    def get_tod(self):
+        tod = torch.arange(self.n_timeslots, device=self.args.device)
+        tod = (tod % self.args.day_size) * 1.0 / self.args.day_size
+        tod = tod.repeat(self.n_series, 1).transpose(1, 0)  # (n_timeslot, nseries)
+        return tod
+
+    def get_ma(self):
+        ma = torch.zeros_like(self.X_scaled, device=self.args.device)
+        for i in range(self.n_timeslots):
+            if i <= self.args.seq_len_x:
+                ma[i] = self.X_scaled[i]
+            else:
+                ma[i] = torch.mean(self.X_scaled[i - self.args.seq_len_x:i], dim=0)
+
+        return ma
+
+    def get_mx(self):
+        mx = torch.zeros_like(self.X_scaled, device=self.args.device)
+        for i in range(self.n_timeslots):
+            if i == 0:
+                mx[i] = self.X_scaled[i]
+            elif 0 < i <= self.args.seq_len_x:
+                mx[i] = torch.max(self.X_scaled[0:i], dim=0)[0]
+            else:
+                mx[i] = torch.max(self.X_scaled[i - self.args.seq_len_x:i], dim=0)[0]
+        return mx
 
     def __len__(self):
         return len(self.indices)
@@ -117,9 +154,37 @@ class TrafficDataset(Dataset):
         xgt = self.oX[t * self.k:(t + self.args.seq_len_x) * self.k]  # step: t-> t + seq_x
         x = x.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
 
-        y = self.X[t + self.args.seq_len_x]
+        if self.type == 'p1':
+            y = self.X[t + self.args.seq_len_x: t + self.args.seq_len_x + self.args.seq_len_y]
+        elif self.type == 'p2':
+            y = torch.max(self.X[t + self.args.seq_len_x:
+                                 t + self.args.seq_len_x + self.args.seq_len_y], dim=0)[0]
 
-        y = y.reshape(1, -1)
+            y = y.reshape(1, -1)
+
+            if self.args.tod:
+                tod = self.tod[t:t + self.args.seq_len_x]
+                tod = tod.unsqueeze(dim=-1)  # [seq_x, n, 1]
+                x = torch.cat([x, tod], dim=-1)  # [seq_x, n, +1]
+
+            if self.args.ma:
+                ma = self.ma[t:t + self.args.seq_len_x]
+                ma = ma.unsqueeze(dim=-1)  # [seq_x, n, 1]
+                x = torch.cat([x, ma], dim=-1)  # [seq_x, n, +1]
+
+            if self.args.mx:
+                mx = self.mx[t:t + self.args.seq_len_x]
+                mx = mx.unsqueeze(dim=-1)  # [seq_x, n, 1]
+                x = torch.cat([x, mx], dim=-1)  # [seq_x, n, +1]
+
+        else:
+            t_prime = int(self.args.seq_len_y / self.trunk)
+            y = [torch.max(self.X[t + self.args.seq_len_x + i:
+                                  t + self.args.seq_len_x + i + t_prime], dim=0)[0]
+                 for i in range(0, self.args.seq_len_y, t_prime)]
+
+            y = torch.stack(y, dim=0)
+
         # ground truth data for doing traffic engineering
         y_gt = self.oX[(t + self.args.seq_len_x) * self.k:
                        (t + self.args.seq_len_x + self.args.seq_len_y) * self.k]
@@ -190,7 +255,6 @@ def train_test_split(X):
 
 
 def get_dataloader(args):
-    print('[Onestep] Loading dataset')
     # loading data
     X = load_raw(args)
 
