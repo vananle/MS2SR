@@ -90,7 +90,8 @@ class LS2SRSolver:
         for u, v in zip(p_kj[:-1], p_kj[1:]):
             edges.append((u, v))
 
-        print()
+        print('{} {} {}'.format(i, k, j))
+        print(edges)
         return edges, p
 
     def get_paths(self, i, j):
@@ -259,8 +260,10 @@ class LS2SRSolver:
 
         # accumulate the utilization
         for u, v in best_path:
+            u, v = sorted((u, v))
             utilizations[(u, v)] -= self.tm[i, j] / self.G[u][v]['capacity']
         for u, v in new_path:
+            u, v = sorted((u, v))
             utilizations[(u, v)] += self.tm[i, j] / self.G[u][v]['capacity']
 
         return utilizations
