@@ -84,4 +84,4 @@ if __name__ == "__main__":
     main(args)
     t2 = time.time()
     mins = (t2 - t1) / 60
-    print("Total time spent: {:.2f} seconds".format(mins))
+    print("Total time spent: {:.2f} mins".format(mins))
