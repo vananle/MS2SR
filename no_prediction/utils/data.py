@@ -101,7 +101,6 @@ class TrafficDataset(Dataset):
 
     def __getitem__(self, idx):
         t = self.indices[idx]
-        print(t)
         xgt = self.oX[t * self.k:(t + self.args.seq_len_x) * self.k]  # step: t-> t + seq_x
         # ground truth data for doing traffic engineering
         y_gt = self.oX[(t + self.args.seq_len_x) * self.k:
