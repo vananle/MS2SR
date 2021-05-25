@@ -52,12 +52,6 @@ def main(args, **model_kwargs):
     args.te_step = te_step
 
     in_dim = 1
-    if args.tod:
-        in_dim += 1
-    if args.ma:
-        in_dim += 1
-    if args.mx:
-        in_dim += 1
 
     args.in_dim = in_dim
 
