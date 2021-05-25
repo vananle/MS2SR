@@ -211,10 +211,13 @@ def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'p0_ls2sr', mlu, rc)
 
 
-def ls2sr_p2(yhat, y_gt, G, te_step, args):
+def ls2sr_p2(yhat, x_gt, y_gt, graph, te_step, args):
     print('ls2sr solver')
+
+    alpha = 0.7
+
     results = []
-    solver = LS2SRSolver(graph=G, args=args)
+    solver = LS2SRSolver(graph=graph, args=args)
 
     solution = None
     dynamicity = np.zeros(shape=(te_step, 7))
@@ -228,7 +231,8 @@ def ls2sr_p2(yhat, y_gt, G, te_step, args):
 
         theo_lamda = calculate_lamda(y_gt=y_gt[i])
 
-        u, solution = p2_heuristic_solver(solver, tm=yhat[i],
+        pred_tm = alpha * yhat[i] + (1.0 - alpha) * x_gt[i, -1, :]
+        u, solution = p2_heuristic_solver(solver, tm=pred_tm,
                                           gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
         dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.sum(std), maxmax_mean, np.mean(u), theo_lamda]
 
@@ -520,7 +524,7 @@ def run_te(x_gt, y_gt, yhat, args):
     print('    Method           |   Min     Avg    Max     std')
 
     if args.run_te == 'ls2sr':
-        ls2sr_p2(yhat, y_gt, graph, te_step, args)
+        ls2sr_p2(yhat, x_gt, y_gt, graph, te_step, args)
     elif args.run_te == 'p0':
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p0_solver(y_gt, graph, segments, te_step, args)
