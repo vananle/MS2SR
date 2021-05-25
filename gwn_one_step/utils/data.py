@@ -79,7 +79,6 @@ class TrafficDataset(Dataset):
         self.args = args
 
         self.out_seq_len = args.out_seq_len
-        self.trunk = args.trunk
         self.k = args.k  # granularity
 
         self.oX = np.copy(X)
