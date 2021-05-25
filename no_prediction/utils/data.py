@@ -101,7 +101,7 @@ class TrafficDataset(Dataset):
 
     def __getitem__(self, idx):
         t = self.indices[idx]
-
+        print(t)
         xgt = self.oX[t * self.k:(t + self.args.seq_len_x) * self.k]  # step: t-> t + seq_x
         # ground truth data for doing traffic engineering
         y_gt = self.oX[(t + self.args.seq_len_x) * self.k:
@@ -186,7 +186,7 @@ def get_dataloader(args):
 
     test_set = TrafficDataset(test_list[args.testset], args=args)
     test_loader = DataLoader(test_set,
-                             batch_size=args.test_batch_size,
+                             batch_size=1,
                              shuffle=False)
 
     return train_loader, val_loader, test_loader

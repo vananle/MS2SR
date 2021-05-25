@@ -60,13 +60,10 @@ def save_results(log_dir, fname, mlus, route_change):
 
 def prepare_te_data(x_gt, y_gt, yhat, args):
     te_step = args.test_size if args.te_step is 0 else args.te_step
-    nsteps = len(range(0, te_step, args.seq_len_y))
-
-    if x_gt.shape[0] > nsteps * 2:
-        x_gt = x_gt[0:te_step:args.seq_len_y]
-        y_gt = y_gt[0:te_step:args.seq_len_y]
-        if args.run_te == 'ls2sr' or args.run_te == 'onestep':
-            yhat = yhat[0:te_step:args.seq_len_y]
+    x_gt = x_gt[0:te_step:args.seq_len_y]
+    y_gt = y_gt[0:te_step:args.seq_len_y]
+    if args.run_te == 'ls2sr' or args.run_te == 'onestep':
+        yhat = yhat[0:te_step:args.seq_len_y]
 
     return x_gt, y_gt, yhat
 
