@@ -60,7 +60,7 @@ def save_results(log_dir, fname, mlus, route_change):
 
 
 def prepare_te_data(x_gt, y_gt, yhat, args):
-    te_step = args.test_size if args.te_step is 0 else args.te_step
+    te_step = args.test_size if args.te_step == 0 else args.te_step
     x_gt = x_gt[0:te_step:args.seq_len_y]
     y_gt = y_gt[0:te_step:args.seq_len_y]
     if args.run_te == 'ls2sr' or args.run_te == 'onestep':
@@ -116,7 +116,7 @@ def last_step_solver(y_gt, x_gt, graph, segments, args):
                                                   for i in range(x_gt.shape[0]))
 
     mlu, solution = extract_results(results)
-    rc = get_route_changes(solution, G)
+    rc = get_route_changes(solution, graph)
     print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(rc),
                                                         np.std(rc)))
     print('last-step            | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu),
@@ -656,6 +656,7 @@ def oblivious_sr(solver, tms):
 
 
 def run_te(x_gt, y_gt, yhat, args):
+    print('|--- run TE on UNDIRECTED graph')
     graph = load_network_topology(args.dataset, args.datapath)
 
     x_gt, y_gt, yhat = prepare_te_data(x_gt, y_gt, yhat, args)

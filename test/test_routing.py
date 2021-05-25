@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-import routing
+import routing_undirected as routing
 
 
 def test_load_graph(dataset, datapath):
@@ -11,12 +11,16 @@ def test_load_graph(dataset, datapath):
     if not os.path.exists(os.path.join(datapath, 'topo/segments')):
         os.makedirs(os.path.join(datapath, 'topo/segments'))
 
-    path = os.path.join(datapath, 'topo/segments/{}_digraph'.format(dataset))
-    if not os.path.isfile(path + '.npy'):
-        segments = routing.get_segments(G)
-        np.save(path, segments)
-    else:
-        segments = np.load(path + '.npy', allow_pickle=True)
+    segments = routing.get_segments(G)
+
+    print(G.edges)
+
+    # path = os.path.join(datapath, 'topo/segments/{}_digraph'.format(dataset))
+    # if not os.path.isfile(path + '.npy'):
+    #     segments = routing.get_segments(G)
+    #     np.save(path, segments)
+    # else:
+    #     segments = np.load(path + '.npy', allow_pickle=True)
 
     print(segments)
     tm = np.ones((12, 12)) * 100

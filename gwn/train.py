@@ -7,7 +7,7 @@ import models
 import torch
 import utils
 from tqdm import trange
-from routing import *
+from routing_undirected import *
 
 import warnings
 
