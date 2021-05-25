@@ -89,6 +89,8 @@ class LS2SRSolver:
             edges.append((u, v))
         for u, v in zip(p_kj[:-1], p_kj[1:]):
             edges.append((u, v))
+
+        print()
         return edges, p
 
     def get_paths(self, i, j):
@@ -146,7 +148,7 @@ class LS2SRSolver:
         folder = os.path.join(self.args.datapath, 'ls2sr/precompute_path')
         if not os.path.exists(folder):
             os.makedirs(folder)
-        path = os.path.join(folder, '{}.pkl'.format(self.args.dataset))
+        path = os.path.join(folder, '{}_undirected.pkl'.format(self.args.dataset))
         if os.path.exists(path):
             print('|--- Load precomputed segment from {}'.format(path))
             data = load(path)
