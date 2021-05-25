@@ -80,7 +80,7 @@ def get_args():
 
     # parameter for test_routing
     parser.add_argument('--run_te', type=str, choices=['None', 'ls2sr', 'p1', 'p2', 'p3', 'onestep', 'laststep',
-                                                       'firststep', 'or'], default='None')
+                                                       'firststep', 'or', 'laststep_ls2sr'], default='None')
     parser.add_argument('--timeout', type=float, default=10.0)
     parser.add_argument('--te_step', type=int, default=0)
 

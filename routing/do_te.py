@@ -1,3 +1,4 @@
+from prophet import Prophet
 from tqdm import tqdm
 
 from .ls2sr import LS2SRSolver
@@ -213,6 +214,101 @@ def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
 
 def ls2sr_p2(yhat, x_gt, y_gt, graph, te_step, args):
     print('ls2sr solver')
+
+    alpha = 0.7
+
+    results = []
+    solver = LS2SRSolver(graph=graph, args=args)
+
+    solution = None
+    dynamicity = np.zeros(shape=(te_step, 7))
+    for i in range(te_step):
+        mean = np.mean(y_gt[i], axis=1)
+        std_mean = np.std(mean)
+        std = np.std(y_gt[i], axis=1)
+        std_std = np.std(std)
+
+        maxmax_mean = np.max(y_gt[i]) / np.mean(y_gt[i])
+
+        theo_lamda = calculate_lamda(y_gt=y_gt[i])
+
+        pred_tm = alpha * yhat[i] + (1.0 - alpha) * x_gt[i, -1, :]
+        u, solution = p2_heuristic_solver(solver, tm=pred_tm,
+                                          gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
+        dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.sum(std), maxmax_mean, np.mean(u), theo_lamda]
+
+        _solution = np.copy(solution)
+        results.append((u, _solution))
+
+    mlu, solution = extract_results(results)
+    route_changes = get_route_changes_heuristic(solution)
+
+    print('Route changes: Avg {:.3f} std {:.3f}'.format(np.sum(route_changes) /
+                                                        (args.seq_len_y * route_changes.shape[0]),
+                                                        np.std(route_changes)))
+    print('P2 ls2sr    {}      | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(args.model,
+                                                                           np.min(mlu),
+                                                                           np.mean(mlu),
+                                                                           np.max(mlu),
+                                                                           np.std(mlu)))
+    congested = mlu[mlu > 1.0].size
+    print('Congestion_rate: {}/{}'.format(congested, mlu.size))
+
+    save_results(args.log_dir, 'ls2sr_p2', mlu, route_changes)
+    np.save(os.path.join(args.log_dir, 'ls2sr_p2_dyn'), dynamicity)
+
+
+def last_step_ls2sr(y_gt, x_gt, graph, te_step, args):
+    print('ls2sr solver')
+
+    results = []
+    solver = LS2SRSolver(graph=graph, args=args)
+
+    solution = None
+    dynamicity = np.zeros(shape=(te_step, 7))
+    for i in range(te_step):
+        mean = np.mean(y_gt[i], axis=1)
+        std_mean = np.std(mean)
+        std = np.std(y_gt[i], axis=1)
+        std_std = np.std(std)
+
+        maxmax_mean = np.max(y_gt[i]) / np.mean(y_gt[i])
+
+        theo_lamda = calculate_lamda(y_gt=y_gt[i])
+
+        last_tm = x_gt[i, -1, :]
+        u, solution = p2_heuristic_solver(solver, tm=last_tm,
+                                          gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
+        dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.sum(std), maxmax_mean, np.mean(u), theo_lamda]
+
+        _solution = np.copy(solution)
+        results.append((u, _solution))
+
+    mlu, solution = extract_results(results)
+    route_changes = get_route_changes_heuristic(solution)
+
+    print('Route changes: Avg {:.3f} std {:.3f}'.format(np.sum(route_changes) /
+                                                        (args.seq_len_y * route_changes.shape[0]),
+                                                        np.std(route_changes)))
+    print('last_step ls2sr    {}      | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(args.model,
+                                                                                  np.min(mlu),
+                                                                                  np.mean(mlu),
+                                                                                  np.max(mlu),
+                                                                                  np.std(mlu)))
+    congested = mlu[mlu > 1.0].size
+    print('Congestion_rate: {}/{}'.format(congested, mlu.size))
+
+    save_results(args.log_dir, 'ls2sr_last_step', mlu, route_changes)
+    np.save(os.path.join(args.log_dir, 'ls2sr_last_step_dyn'), dynamicity)
+
+
+def prophet_predicted_solver(x_gt, y_gt, graph, te_step, args):
+    print('ls2sr solver')
+
+    prophet = Prophet()
+
+    def prophet_prediction(input):
+        prophet.fit(input)
 
     alpha = 0.7
 
@@ -540,9 +636,13 @@ def run_te(x_gt, y_gt, yhat, args):
     elif args.run_te == 'onestep':
         segments = compute_path(graph, args.dataset, args.datapath)
         one_step_predicted_solver(yhat, y_gt, graph, segments, te_step, args)
+    elif args.run_te == 'prophet':
+        prophet_predicted_solver(x_gt, y_gt, graph, te_step, args)
     elif args.run_te == 'laststep':
         segments = compute_path(graph, args.dataset, args.datapath)
         last_step_solver(y_gt, x_gt, graph, segments, te_step, args)
+    elif args.run_te == 'laststep_ls2sr':
+        last_step_ls2sr(y_gt, x_gt, graph, te_step, args)
     elif args.run_te == 'firststep':
         segments = compute_path(graph, args.dataset, args.datapath)
         first_step_solver(y_gt, graph, segments, te_step, args)

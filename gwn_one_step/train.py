@@ -48,7 +48,7 @@ def main(args, **model_kwargs):
     args.train_size, args.nSeries = train_loader.dataset.X.shape
     args.val_size = val_loader.dataset.X.shape[0]
     args.test_size = test_loader.dataset.X.shape[0]
-    te_step = args.test_size if args.te_step is 0 else args.te_step
+    te_step = args.test_size if args.te_step == 0 else args.te_step
     args.te_step = te_step
 
     in_dim = 1
