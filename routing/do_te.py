@@ -656,6 +656,7 @@ def oblivious_sr(solver, tms):
 
 
 def run_te(x_gt, y_gt, yhat, args):
+    print('|--- run TE on DIRECTED graph')
     graph = load_network_topology(args.dataset, args.datapath)
 
     x_gt, y_gt, yhat = prepare_te_data(x_gt, y_gt, yhat, args)
