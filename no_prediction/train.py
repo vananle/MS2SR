@@ -5,7 +5,7 @@ sys.path.append('..')
 import time
 import torch
 import utils
-from routing_undirected import *
+from routing import *
 
 import warnings
 
