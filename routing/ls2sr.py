@@ -225,10 +225,7 @@ class LS2SRSolver:
                     if edge_in_path(edge, path):
                         self.link2flow[edge].append((i, j))
 
-    def evaluate(self, solution, tm=None):
-        # extract parameters
-        if tm is None:
-            tm = self.tm
+    def evaluate(self, solution, tm):
         # extract utilization
         utilizations = []
         for u, v in self.G.edges:
@@ -243,7 +240,7 @@ class LS2SRSolver:
             utilizations.append(utilization)
         return max(utilizations)
 
-    def evaluate_fast(self, new_path_idx, best_solution, i, j):
+    def evaluate_fast(self, tm, new_path_idx, best_solution, i, j):
         # get current utilization from edges
         utilizations = nx.get_edge_attributes(self.G, 'utilization')
 
@@ -256,9 +253,9 @@ class LS2SRSolver:
 
         # accumulate the utilization
         for u, v in best_path:
-            utilizations[(u, v)] -= self.tm[i, j] / self.G[u][v]['capacity']
+            utilizations[(u, v)] -= tm[i, j] / self.G[u][v]['capacity']
         for u, v in new_path:
-            utilizations[(u, v)] += self.tm[i, j] / self.G[u][v]['capacity']
+            utilizations[(u, v)] += tm[i, j] / self.G[u][v]['capacity']
 
         return utilizations
 
@@ -279,8 +276,6 @@ class LS2SRSolver:
         nx.set_edge_attributes(self.G, utilizations, name='utilization')
 
     def solve(self, tm, solution=None, eps=1e-8):
-        # save parameters
-        self.tm = tm
 
         # initialize solution
         if solution is None:
@@ -302,7 +297,7 @@ class LS2SRSolver:
             if new_path_idx >= self.ub[i, j]:
                 new_path_idx = 0
 
-            utilization = self.evaluate_fast(new_path_idx, best_solution, i, j)
+            utilization = self.evaluate_fast(tm, new_path_idx, best_solution, i, j)
             mlu = max(utilization.values())
             if theta - mlu >= eps:
                 self.update_link2flows(old_path_idx=best_solution[i, j], new_path_idx=new_path_idx, i=i, j=j)
