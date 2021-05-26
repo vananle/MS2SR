@@ -156,7 +156,7 @@ def train_test_split(X):
     X_val = X[train_size:val_size + train_size]
 
     X_test_list = []
-    for i in range(5):
+    for i in range(10):
         X_test = X[val_size + train_size + test_size * i: val_size + train_size + test_size * (i + 1)]
         X_test_list.append(X_test)
         if val_size + train_size + test_size * (i + 1) >= X.shape[0]:
