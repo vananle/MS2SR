@@ -60,7 +60,7 @@ def save_results(log_dir, fname, mlus, route_change):
 
 
 def prepare_te_data(x_gt, y_gt, yhat, args):
-    te_step = args.test_size if args.te_step is 0 else args.te_step
+    te_step = args.test_size if args.te_step == 0 else args.te_step
     x_gt = x_gt[0:te_step:args.seq_len_y]
     y_gt = y_gt[0:te_step:args.seq_len_y]
     if args.run_te == 'ls2sr' or args.run_te == 'onestep':
@@ -235,6 +235,7 @@ def ls2sr_gwn_p2(yhat, x_gt, y_gt, graph, te_step, args):
         pred_tm = alpha * yhat[i] + (1.0 - alpha) * x_gt[i, -1, :]
         u, solution = p2_heuristic_solver(solver, tm=pred_tm,
                                           gt_tms=y_gt[i], p_solution=solution, nNodes=args.nNodes)
+
         dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.sum(std), maxmax_mean, np.mean(u), theo_lamda]
 
         _solution = np.copy(solution)
