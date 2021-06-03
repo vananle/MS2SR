@@ -452,7 +452,7 @@ def optimal_p1_solver(y_gt, G, segments, te_step, args):
     congested = mlu[mlu >= 1.0].size
     print('Congestion_rate: {}/{}'.format(congested, mlu.size))
 
-    save_results(args.log_dir, 'test_{}_p1_optimal'.format(args.testset), mlu, rc)
+    save_results(args.log_dir, 'test_{}_p1'.format(args.testset), mlu, rc)
 
 
 def optimal_p2_solver(y_gt, G, segments, te_step, args):
@@ -484,7 +484,7 @@ def optimal_p2_solver(y_gt, G, segments, te_step, args):
     congested = mlu[mlu >= 1.0].size
     print('Congestion_rate: {}/{}'.format(congested, mlu.size))
 
-    save_results(args.log_dir, 'test_{}_p2_optimal'.format(args.testset), mlu, rc)
+    save_results(args.log_dir, 'test_{}_p2'.format(args.testset), mlu, rc)
 
 
 def gwn_p2(y_hat, y_gt, G, segments, te_step, args):
@@ -549,7 +549,7 @@ def optimal_p3_solver(y_gt, G, segments, te_step, args):
     congested = mlu[mlu >= 1.0].size
     print('Congestion_rate: {}/{}'.format(congested, mlu.size))
 
-    save_results(args.log_dir, 'test_{}_p3_optimal'.format(args.testset), mlu, rc)
+    save_results(args.log_dir, 'test_{}_p3'.format(args.testset), mlu, rc)
 
 
 def p1(solver, tms, gt_tms):
