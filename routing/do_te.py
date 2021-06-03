@@ -212,7 +212,7 @@ def ls2sr_p0(yhat, y_gt, x_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'test_{}_p0_ls2sr'.format(args.testset), mlu, rc)
 
 
-def ls2sr_gwn_p2(yhat, x_gt, y_gt, graph, te_step, args):
+def gwn_ls2sr(yhat, x_gt, y_gt, graph, te_step, args):
     print('ls2sr_gwn_p2')
 
     alpha = 0.8
@@ -259,7 +259,7 @@ def ls2sr_gwn_p2(yhat, x_gt, y_gt, graph, te_step, args):
     np.save(os.path.join(args.log_dir, 'test_{}_ls2sr_p2_dyn'.format(args.testset)), dynamicity)
 
 
-def ls2sr_p2(y_gt, graph, te_step, args):
+def gt_ls2sr(y_gt, graph, te_step, args):
     print('ls2sr p2')
 
     results = []
@@ -487,6 +487,38 @@ def optimal_p2_solver(y_gt, G, segments, te_step, args):
     save_results(args.log_dir, 'test_{}_p2_optimal'.format(args.testset), mlu, rc)
 
 
+def gwn_p2(y_hat, y_gt, G, segments, te_step, args):
+    solver = MaxStepSRSolver(G, segments)
+
+    def f(gt_tms, tms):
+        tms = tms.reshape((-1, args.nNodes, args.nNodes))
+        gt_tms = gt_tms.reshape((-1, args.nNodes, args.nNodes))
+
+        tms[tms <= 0.0] = 0.0
+        gt_tms[gt_tms <= 0.0] = 0.0
+
+        tms[:] = tms[:] * (1.0 - np.eye(args.nNodes))
+        gt_tms[:] = gt_tms[:] * (1.0 - np.eye(args.nNodes))
+        tms = tms.reshape((args.nNodes, args.nNodes))
+
+        return p2(solver, tms=tms, gt_tms=gt_tms)
+
+    results = Parallel(n_jobs=os.cpu_count() - 4)(delayed(f)(
+        gt_tms=y_gt[i], tms=y_hat[i]) for i in range(te_step))
+
+    mlu, solution_optimal_p2 = extract_results(results)
+    rc = get_route_changes(solution_optimal_p2, G)
+    print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(rc), np.std(rc)))
+    print('P2                   | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu),
+                                                                            np.mean(mlu),
+                                                                            np.max(mlu),
+                                                                            np.std(mlu)))
+    congested = mlu[mlu >= 1.0].size
+    print('Congestion_rate: {}/{}'.format(congested, mlu.size))
+
+    save_results(args.log_dir, 'test_{}_p2_optimal'.format(args.testset), mlu, rc)
+
+
 def optimal_p3_solver(y_gt, G, segments, te_step, args):
     t_prime = int(args.seq_len_y / args.trunk)
     solver = MultiStepSRSolver(G, segments)
@@ -665,19 +697,22 @@ def run_te(x_gt, y_gt, yhat, args):
     te_step = x_gt.shape[0]
     print('    Method           |   Min     Avg    Max     std')
 
-    if args.run_te == 'ls2sr':
-        ls2sr_gwn_p2(yhat, x_gt, y_gt, graph, te_step, args)
-    elif args.run_te == 'ls2sr_p2':
-        ls2sr_p2(y_gt, graph, te_step, args)
+    if args.run_te == 'gwn_ls2sr':
+        gwn_ls2sr(yhat, x_gt, y_gt, graph, te_step, args)
+    elif args.run_te == 'gt_ls2sr':
+        gt_ls2sr(y_gt, graph, te_step, args)
     elif args.run_te == 'p0':
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p0_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p1':
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p1_solver(y_gt, graph, segments, te_step, args)
-    elif args.run_te == 'p2':
+    elif args.run_te == 'p2':  # (or gt_p2)
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p2_solver(y_gt, graph, segments, te_step, args)
+    elif args.run_te == 'gwn_p2':
+        segments = compute_path(graph, args.dataset, args.datapath)
+        gwn_p2(yhat, y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p3':
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p3_solver(y_gt, graph, segments, te_step, args)
