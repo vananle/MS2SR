@@ -65,7 +65,7 @@ class StandardScaler_torch():
 
 def granularity(data, k):
     if k == 1:
-        return data
+        return np.copy(data)
     else:
         newdata = [np.mean(data[i:i + k], axis=0) for i in range(0, data.shape[0], k)]
         newdata = np.asarray(newdata)
