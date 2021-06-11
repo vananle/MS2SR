@@ -116,7 +116,7 @@ def last_step_solver(y_gt, x_gt, graph, segments, args):
                                                   for i in range(x_gt.shape[0]))
 
     mlu, solution = extract_results(results)
-    rc = get_route_changes(solution, G)
+    rc = get_route_changes(solution, graph)
     print('Route changes: Avg {:.3f} std {:.3f}'.format(np.mean(rc),
                                                         np.std(rc)))
     print('last-step            | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(np.min(mlu),
