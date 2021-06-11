@@ -7,7 +7,7 @@ from scipy.io import loadmat
 from torch.utils.data import Dataset, DataLoader
 
 
-class MinMaxScaler_torch():
+class MinMaxScaler_torch:
 
     def __init__(self, min=None, max=None, device='cuda:0'):
         self.min = min
@@ -26,7 +26,7 @@ class MinMaxScaler_torch():
         return (data * (self.max - self.min + 1e-8)) + self.min
 
 
-class StandardScaler_torch():
+class StandardScaler_torch:
 
     def __init__(self):
         self.means = 0
@@ -187,6 +187,7 @@ def data_preprocessing(data, args, gen_times=5, scaler=None):
     start_idx = 0
     for _ in range(gen_times):
         for t in range(start_idx, n_timesteps - len_x - len_y, len_x):
+            print(t)
             x = X_scaled[t:t + len_x]
             x = x.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
 
