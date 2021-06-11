@@ -187,7 +187,6 @@ def data_preprocessing(data, args, gen_times=5, scaler=None):
     start_idx = 0
     for _ in range(gen_times):
         for t in range(start_idx, n_timesteps - len_x - len_y, len_x):
-            print(t)
             x = X_scaled[t:t + len_x]
             x = x.unsqueeze(dim=-1)  # add feature dim [seq_x, n, 1]
 
