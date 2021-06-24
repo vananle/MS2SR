@@ -166,18 +166,6 @@ def data_preprocessing(data, args, gen_times=5, scaler=None):
 
     X_scaled = scaler.transform(X)
 
-    # if args.tod:
-    #     tod = get_tod(n_timesteps, n_series, args.day_size, args.device)
-    #
-    # if args.ma:
-    #     ma = get_ma(X, args.seq_len_x, n_timesteps, args.device)
-    #
-    # if args.mx:
-    #     mx = get_mx(X, args.seq_len_x, n_timesteps, args.device)
-    #
-    # if np.isnan(X).any():
-    #     raise ValueError('Data has Nan')
-
     len_x = args.seq_len_x
     len_y = args.seq_len_y
 
@@ -253,8 +241,8 @@ def get_dataloader(args):
     # loading data
     X = load_raw(args)
     total_timesteps, total_series = X.shape
-    stored_path = os.path.join(args.datapath, 'data/preprocessed_{}_{}_{}/'.format(args.dataset, args.seq_len_x,
-                                                                                   args.seq_len_y))
+    stored_path = os.path.join(args.datapath, 'data/gwn_{}_{}_{}/'.format(args.dataset, args.seq_len_x,
+                                                                          args.seq_len_y))
     if not os.path.exists(stored_path):
         os.makedirs(stored_path)
 
@@ -264,14 +252,14 @@ def get_dataloader(args):
 
     if not os.path.exists(saved_train_path):
         train, val, test_list = train_test_split(X)
-        trainset = data_preprocessing(data=train, args=args, gen_times=5, scaler=None)
+        trainset = data_preprocessing(data=train, args=args, gen_times=10, scaler=None)
         train_scaler = trainset['Scaler']
         with open(saved_train_path, 'wb') as fp:
             pickle.dump(trainset, fp, protocol=pickle.HIGHEST_PROTOCOL)
             fp.close()
 
         print('Data preprocessing: VALSET')
-        valset = data_preprocessing(data=val, args=args, gen_times=5, scaler=train_scaler)
+        valset = data_preprocessing(data=val, args=args, gen_times=10, scaler=train_scaler)
         with open(saved_val_path, 'wb') as fp:
             pickle.dump(valset, fp, protocol=pickle.HIGHEST_PROTOCOL)
             fp.close()
