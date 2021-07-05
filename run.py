@@ -54,7 +54,7 @@ def main():
                 cmd += ' --run_te {}'.format(te)
                 os.system(cmd)
                 iteration.set_description(
-                    'Dataset {} - testset {} te: {}'.format(dataset_name, test.te))
+                    'Dataset {} - testset {} te: {}'.format(dataset_name, test, te))
 
         else:
             os.system(cmd)
