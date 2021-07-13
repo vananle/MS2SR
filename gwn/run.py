@@ -36,7 +36,7 @@ def main():
     # run_te = ['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2', 'p3', 'onestep',
     #           'prophet', 'laststep', 'laststep_ls2sr', 'firststep', 'or']
     if args.test:
-        testset = [0, 1, 2, 3, 4, 5]
+        testset = [0, 1, 2, 3, 4]
     else:
         testset = [0]
 
