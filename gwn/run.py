@@ -22,6 +22,10 @@ def get_args():
                         help='Dataset, (default abilene_tm)')
     parser.add_argument('--test', action='store_true')
     parser.add_argument('--device', type=str, default='cuda:0')
+    parser.add_argument('--run_te', type=str, choices=['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2',
+                                                       'p3', 'onestep', 'prophet', 'laststep', 'laststep_ls2sr',
+                                                       'firststep', 'or'],
+                        default='None')
 
     args = parser.parse_args()
     return args
@@ -31,8 +35,11 @@ def main():
     # get args
     args = get_args()
     dataset_name = args.dataset
-    run_te = ['gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2', 'p3', 'onestep',
-              'laststep', 'laststep_ls2sr', 'firststep', 'or']
+    if args.run_te == 'None':
+        run_te = ['gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2', 'p3', 'onestep',
+                  'laststep', 'laststep_ls2sr', 'firststep', 'or']
+    else:
+        run_te = [args.run_te]
     # run_te = ['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2', 'p3', 'onestep',
     #           'prophet', 'laststep', 'laststep_ls2sr', 'firststep', 'or']
     if args.test:
