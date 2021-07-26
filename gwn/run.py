@@ -24,7 +24,7 @@ def get_args():
     parser.add_argument('--device', type=str, default='cuda:0')
     parser.add_argument('--run_te', type=str, choices=['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2',
                                                        'p3', 'onestep', 'prophet', 'laststep', 'laststep_ls2sr',
-                                                       'firststep', 'or'],
+                                                       'firststep', 'or', 'gwn_srls'],
                         default='None')
 
     args = parser.parse_args()
@@ -43,7 +43,10 @@ def main():
     # run_te = ['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2', 'p3', 'onestep',
     #           'prophet', 'laststep', 'laststep_ls2sr', 'firststep', 'or']
     if args.test:
-        testset = [0, 1, 2, 3, 4]
+        if args.dataset == 'abilene_tm':
+            testset = [0, 1, 2, 3, 4, 5]
+        else:
+            testset = [0, 1, 2, 3, 4]
     else:
         testset = [0]
 
@@ -51,7 +54,7 @@ def main():
     # experiment for each dataset
     for test in iteration:
         cmd = 'python train.py --do_graph_conv --aptonly --addaptadj --randomadj'
-        cmd += ' --train_batch_size 128 --val_batch_size 128'
+        cmd += ' --train_batch_size 64 --val_batch_size 64'
         cmd += ' --dataset {}'.format(dataset_name)
         cmd += ' --device {}'.format(args.device)
         if args.test:
@@ -59,11 +62,13 @@ def main():
             cmd += ' --testset {}'.format(test)
             for te in run_te:
                 cmd += ' --run_te {}'.format(te)
+                print(cmd)
                 os.system(cmd)
                 iteration.set_description(
                     'Dataset {} - testset {} te: {}'.format(dataset_name, test, te))
 
         else:
+            print(cmd)
             os.system(cmd)
             iteration.set_description(
                 'Dataset {} - testset {}'.format(dataset_name, test))
