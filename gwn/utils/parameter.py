@@ -84,7 +84,7 @@ def get_args():
                                                        'firststep', 'or', 'gwn_srls'],
                         default='None')
 
-    parser.add_argument('--timeout', type=float, default=10.0)
+    parser.add_argument('--timeout', type=float, default=1.0)
     parser.add_argument('--te_step', type=int, default=0)
 
     # get args
