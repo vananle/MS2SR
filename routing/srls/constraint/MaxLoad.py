@@ -1,6 +1,5 @@
 from ..state import Trial, Objective
 
-
 class MaxLoad(Trial, Objective):
     def __init__(self, nNodes, nEdges, capacityData, flowState, sp):
         self.nNodes = nNodes
