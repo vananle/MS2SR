@@ -26,6 +26,9 @@ def get_args():
                                                        'p3', 'onestep', 'prophet', 'laststep', 'laststep_ls2sr',
                                                        'firststep', 'or', 'gwn_srls', 'gt_srls', 'srls_p0'],
                         default='None')
+    parser.add_argument('--testset', type=int, default=-1,
+                        choices=[-1, 0, 1, 2, 3, 4],
+                        help='Test set, (default 0)')
 
     args = parser.parse_args()
     return args
@@ -43,10 +46,11 @@ def main():
     # run_te = ['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2', 'p3', 'onestep',
     #           'prophet', 'laststep', 'laststep_ls2sr', 'firststep', 'or']
     if args.test:
-        if args.dataset == 'abilene_tm':
-            testset = [0, 1, 2, 3, 4, 5]
-        else:
+        if args.testset == -1:
             testset = [0, 1, 2, 3, 4]
+        else:
+            testset = [args.testset]
+
     else:
         testset = [0]
 

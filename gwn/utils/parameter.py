@@ -13,7 +13,7 @@ def get_args():
                         choices=['abilene_tm', 'geant_tm', 'brain_tm', 'renater_tm', 'surfnet_tm', 'uninett_tm'],
                         help='Dataset, (default abilene_tm)')
     parser.add_argument('--testset', type=int, default=0,
-                        choices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                        choices=[0, 1, 2, 3, 4],
                         help='Test set, (default 0)')
     parser.add_argument('--datapath', type=str, default='../../data')
     parser.add_argument('--type', type=str, default='p2', choices=['p1', 'p2', 'p3'],
