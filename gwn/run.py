@@ -63,19 +63,19 @@ def main():
         cmd += ' --device {}'.format(args.device)
         if args.test:
             cmd += ' --test'
-            cmd += ' --testset {}'.format(test)
+            cmd += ' --testset {}'.format(testset[test])
             for te in run_te:
                 cmd += ' --run_te {}'.format(te)
                 print(cmd)
                 os.system(cmd)
                 iteration.set_description(
-                    'Dataset {} - testset {} te: {}'.format(dataset_name, test, te))
+                    'Dataset {} - testset {} te: {}'.format(dataset_name, testset[test], te))
 
         else:
             print(cmd)
             os.system(cmd)
             iteration.set_description(
-                'Dataset {} - testset {}'.format(dataset_name, test))
+                'Dataset {} - testset {}'.format(dataset_name, testset[test]))
 
 
 if __name__ == '__main__':
