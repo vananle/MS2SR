@@ -28,7 +28,7 @@ def get_args():
                         default='None')
     parser.add_argument('--testset', type=int, default=-1,
                         choices=[-1, 0, 1, 2, 3, 4],
-                        help='Test set, (default 0)')
+                        help='Test set, (default -1 run all test)')
 
     args = parser.parse_args()
     return args
