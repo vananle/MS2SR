@@ -41,7 +41,7 @@ def main(args, **model_kwargs):
     else:
         raise ValueError('Dataset not found!')
 
-    sets = ['train', 'val', 'test_0', 'test_1', 'test_2', 'test_3', 'test_4']
+    sets = ['test_0', 'test_1']
     for set in sets:
         if set == 'train' or set == 'val':
             args.test = False
