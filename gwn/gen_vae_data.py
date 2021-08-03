@@ -45,6 +45,7 @@ def main(args, **model_kwargs):
     for set in sets:
         if set == 'train' or set == 'val':
             args.test = False
+            args.testset = 0
         else:
             args.test = True
             testset = int(set.split('_')[1])
