@@ -96,6 +96,7 @@ def main(args, **model_kwargs):
 
         # run TE
         if args.run_te != 'None':
+            print(' SET: {}'.format(set))
             args.testset = set
             run_te(x_gt, y_gt, yhat, args)
 
