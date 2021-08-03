@@ -1,5 +1,7 @@
 import time
 
+import numpy as np
+
 from .constraint import MaxLoad
 from .demand import DemandsData
 from .neighborhood import *
@@ -203,3 +205,37 @@ class LoadOptimizer:
                                     if values[edge] > mlu:
                                         mlu = values[edge]
         return mlu
+
+    def getRoutingMatrix(self, routingSolution):
+        nLinks = self.nEdges
+        nNodes = self.nNodes
+        routingMatrix = np.zeros((nLinks, nNodes ** 2))
+        for i in range(nNodes):
+            for j in range(nNodes):
+                if i != j:
+                    for k in range(len(routingSolution[i][j]) - 1):
+                        n = routingSolution[i][j][k]
+                        m = routingSolution[i][j][k + 1]
+                        for path in self.sp.pathEdges[m][n]:
+                            for link in path:
+                                routingMatrix[link][i * nNodes + j] = 1
+        return routingMatrix
+
+    def getLinkload(self, routingSolution, trafficMatrix):
+        nLinks = self.nEdges
+        nNodes = self.nNodes
+        linkLoad = np.zeros((nLinks, 1))
+        for i in range(nNodes):
+            for j in range(nNodes):
+                if i != j:
+                    for k in range(len(routingSolution[i][j]) - 1):
+                        n = routingSolution[i][j][k]
+                        m = routingSolution[i][j][k + 1]
+                        paths = self.sp.pathEdges[n][m]
+                        nPath = self.sp.nPaths[n][m]
+                        if m != n:
+                            increment = trafficMatrix[i][j] / nPath
+                            for path in paths:
+                                for edge in path:
+                                    linkLoad[edge] += increment
+        return linkLoad

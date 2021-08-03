@@ -318,7 +318,7 @@ def gwn_srls(yhat, y_gt, graphs, te_step, args):
 
     results = []
     solver = SRLS(sp, capacity, nNodes, nEdges, args.timeout)
-
+    LinkLoads, RoutingMatrices, TMs = [], [], []
     dynamicity = np.zeros(shape=(te_step, 7))
     for i in tqdm(range(te_step)):
         mean = np.mean(y_gt[i], axis=1)
@@ -331,12 +331,19 @@ def gwn_srls(yhat, y_gt, graphs, te_step, args):
         theo_lamda = calculate_lamda(y_gt=y_gt[i])
 
         pred_tm = yhat[i]
-        u, solution = p2_srls_solver(solver, tm=pred_tm, gt_tms=y_gt[i], nNodes=args.nNodes)
-        solution = np.asarray(solution)
+        u, solutions, linkloads, routingMxs = p2_srls_solver(solver, tm=pred_tm, gt_tms=y_gt[i], nNodes=args.nNodes)
+        solutions = np.asarray(solutions)
         dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.sum(std), maxmax_mean, np.mean(u), theo_lamda]
 
-        _solution = np.copy(solution)
-        results.append((u, _solution))
+        _solutions = np.copy(solutions)
+        results.append((u, _solutions))
+        LinkLoads.append(linkloads)
+        RoutingMatrices.append(routingMxs)
+        TMs.append(y_gt[i])
+
+    LinkLoads = np.stack(LinkLoads, axis=0)
+    RoutingMatrices = np.stack(RoutingMatrices, axis=0)
+    TMs = np.stack(TMs, axis=0)
 
     mlu, solution = extract_results(results)
     route_changes = get_route_changes(solution, G)
@@ -354,6 +361,10 @@ def gwn_srls(yhat, y_gt, graphs, te_step, args):
 
     save_results(args.log_dir, 'test_{}_gwn_srls'.format(args.testset), mlu, route_changes)
     np.save(os.path.join(args.log_dir, 'test_{}_gwn_srls_dyn'.format(args.testset)), dynamicity)
+
+    np.save(os.path.join(args.log_dir, 'LinkLoads_gwn_srls_{}'.format(args.testset)), LinkLoads)
+    np.save(os.path.join(args.log_dir, 'RoutingMatrices_gwn_srls_{}'.format(args.testset)), RoutingMatrices)
+    np.save(os.path.join(args.log_dir, 'TMs_gwn_srls_{}'.format(args.testset)), TMs)
 
 
 def gt_srls(y_gt, graphs, te_step, args):
@@ -418,12 +429,12 @@ def srls_p0(y_gt, graphs, te_step, args):
 
         theo_lamda = calculate_lamda(y_gt=y_gt[i])
 
-        u, solution = p0_srls_solver(solver, tms=y_gt[i], gt_tms=y_gt[i], nNodes=args.nNodes)
-        solution = np.asarray(solution)
+        u, solutions, linkloads, routingMxs = p0_srls_solver(solver, tms=y_gt[i], gt_tms=y_gt[i], nNodes=args.nNodes)
+        solutions = np.asarray(solutions)
         dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.sum(std), maxmax_mean, np.mean(u), theo_lamda]
 
-        _solution = np.copy(solution)
-        results.append((u, _solution))
+        _solutions = np.copy(solutions)
+        results.append((u, _solutions))
 
     mlu, solution = extract_results(results)
     route_changes = get_route_changes(solution, G)
@@ -831,10 +842,20 @@ def p2_srls_solver(solver, tm, gt_tms, nNodes):
         pass
 
     solution = solver.extractRoutingPath()
+    linkloads, routingMxs = [], []
+    solutions = []
 
     for i in range(gt_tms.shape[0]):
+        solutions.append(solution)
+
         u.append(solver.evaluate(solution, gt_tms[i]))
-    return u, solution
+
+        linkload = solver.getLinkload(routingSolution=solution, trafficMatrix=gt_tms[i])
+        routingMx = solver.getRoutingMatrix(routingSolution=solution)
+        linkloads.append(linkload)
+        routingMxs.append(routingMx)
+
+    return u, solutions, linkloads, routingMxs
 
 
 def p0_srls_solver(solver, tms, gt_tms, nNodes):
@@ -850,7 +871,7 @@ def p0_srls_solver(solver, tms, gt_tms, nNodes):
     tms = tms.reshape((-1, nNodes, nNodes))
 
     solutions = []
-
+    linkloads, routingMxs = [], []
     for i in range(gt_tms.shape[0]):
         try:
             solver.modifierTrafficMatrix(tms[i])  # solve backtrack solution (line 131)
@@ -863,7 +884,12 @@ def p0_srls_solver(solver, tms, gt_tms, nNodes):
         u.append(solver.evaluate(solution, gt_tms[i]))
         solutions.append(solution)
 
-    return u, solutions
+        linkload = solver.getLinkload(routingSolution=solution, trafficMatrix=gt_tms[i])
+        routingMx = solver.getRoutingMatrix(routingSolution=solution)
+        linkloads.append(linkload)
+        routingMxs.append(routingMx)
+
+    return u, solutions, linkloads, routingMxs
 
 
 def last_step_sr(solver, last_tm, gt_tms):
@@ -966,8 +992,8 @@ def run_te(x_gt, y_gt, yhat, args):
     elif args.run_te == 'onestep':
         segments = compute_path(graph, args.dataset, args.datapath)
         one_step_predicted_solver(yhat, y_gt, graph, segments, te_step, args)
-    elif args.run_te == 'prophet':
-        prophet_predicted_solver(x_gt, y_gt, graph, te_step, args)
+    # elif args.run_te == 'prophet':
+    #     prophet_predicted_solver(x_gt, y_gt, graph, te_step, args)
     elif args.run_te == 'laststep':
         segments = compute_path(graph, args.dataset, args.datapath)
         last_step_solver(y_gt, x_gt, graph, segments, args)
