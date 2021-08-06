@@ -41,7 +41,17 @@ def main(args, **model_kwargs):
     else:
         raise ValueError('Dataset not found!')
 
-    sets = ['val']
+    args.do_graph_conv = True
+    args.aptonly = True
+    args.addaptadj = True
+    args.randomadj = True
+    args.train_batch_size = 64
+    args.val_batch_size = 64
+    args.dataset = 'abilene_tm'
+    args.device = 'cuda:0'
+
+    sets = ['train', 'val', 'test_0', 'test_1', 'test_2', 'test_3', 'test_4']
+    y_gt_train = []
     for set in sets:
         if set == 'train' or set == 'val':
             args.test = False
@@ -99,8 +109,17 @@ def main(args, **model_kwargs):
         if args.run_te != 'None':
             print(' SET: {}'.format(set))
             args.testset = set
-            run_te(x_gt, y_gt, yhat, args)
+            # run_te(x_gt, y_gt, yhat, args)
 
+            te_step = x_gt.shape[0]
+            if set == 'train':
+                y_gt_train = y_gt
+            all_data = np.reshape(y_gt, newshape=(-1, y_gt_train.shape[-1]))
+            max_tm = np.max(all_data, axis=0, keepdims=True)
+
+            graphs = createGraph_srls(os.path.join(args.datapath, 'topo/{}_node.csv'.format(args.dataset)),
+                                      os.path.join(args.datapath, 'topo/{}_edge.csv'.format(args.dataset)))
+            srls_fix_max(max_tm, y_gt, graphs, te_step, args)
 
 if __name__ == "__main__":
     args = utils.get_args()
