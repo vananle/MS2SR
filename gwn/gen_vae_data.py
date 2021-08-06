@@ -121,6 +121,7 @@ def main(args, **model_kwargs):
                                       os.path.join(args.datapath, 'topo/{}_edge.csv'.format(args.dataset)))
             srls_fix_max(max_tm, y_gt, graphs, te_step, args)
 
+
 if __name__ == "__main__":
     args = utils.get_args()
     t1 = time.time()
