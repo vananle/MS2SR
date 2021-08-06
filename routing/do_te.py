@@ -482,8 +482,22 @@ def srls_fix_max(max_tm, y_gt, graphs, te_step, args):
     solver = SRLS(sp, capacity, nNodes, nEdges, args.timeout)
     LinkLoads, RoutingMatrices, TMs = [], [], []
 
+    max_tm = max_tm.reshape((-1, nNodes, nNodes))
+    max_tm[max_tm <= 0.0] = 0.0
+    max_tm[:] = max_tm[:] * (1.0 - np.eye(nNodes))
+    max_tm = max_tm.reshape((nNodes, nNodes))
+
+    try:
+        solver.modifierTrafficMatrix(max_tm)  # solve backtrack solution (line 131)
+        solver.solve()
+    except:
+        print('ERROR in p2_srls_solver --> pass')
+        pass
+    solution = solver.extractRoutingPath()
+
     for i in tqdm(range(te_step)):
-        u, solutions, linkloads, routingMxs = p2_srls_solver(solver, tm=max_tm, gt_tms=y_gt[i], nNodes=args.nNodes)
+        linkloads, routingMxs = p2_srls_fix_max_solver(solver=solver, solution=solution,
+                                                       gt_tms=y_gt[i], nNodes=nNodes)
         LinkLoads.append(linkloads)
         TMs.append(y_gt[i])
         if i == 0:
@@ -901,6 +915,22 @@ def p2_srls_solver(solver, tm, gt_tms, nNodes):
         routingMxs.append(routingMx)
 
     return u, solutions, linkloads, routingMxs
+
+
+def p2_srls_fix_max_solver(solver, solution, gt_tms, nNodes):
+    gt_tms = gt_tms.reshape((-1, nNodes, nNodes))
+    gt_tms[gt_tms <= 0.0] = 0.0
+    gt_tms[:] = gt_tms[:] * (1.0 - np.eye(nNodes))
+
+    linkloads, routingMxs = [], []
+
+    for i in range(gt_tms.shape[0]):
+        linkload = solver.getLinkload(routingSolution=solution, trafficMatrix=gt_tms[i])
+        routingMx = solver.getRoutingMatrix(routingSolution=solution)
+        linkloads.append(linkload)
+        routingMxs.append(routingMx)
+
+    return linkloads, routingMxs
 
 
 def p0_srls_solver(solver, tms, gt_tms, nNodes):
