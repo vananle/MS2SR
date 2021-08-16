@@ -29,6 +29,7 @@ def get_args():
     parser.add_argument('--testset', type=int, default=-1,
                         choices=[-1, 0, 1, 2, 3, 4],
                         help='Test set, (default -1 run all test)')
+    parser.add_argument('--epochs', type=int, default=100, help='')
 
     args = parser.parse_args()
     return args
@@ -61,6 +62,7 @@ def main():
         cmd += ' --train_batch_size 64 --val_batch_size 64'
         cmd += ' --dataset {}'.format(dataset_name)
         cmd += ' --device {}'.format(args.device)
+        cmd += ' --epochs {}'.format(args.epochs)
         if args.test:
             cmd += ' --test'
             cmd += ' --testset {}'.format(testset[test])
