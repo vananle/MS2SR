@@ -30,6 +30,7 @@ def get_args():
                         choices=[-1, 0, 1, 2, 3, 4],
                         help='Test set, (default -1 run all test)')
     parser.add_argument('--epochs', type=int, default=100, help='')
+    parser.add_argument('--timeout', type=float, default=1.0)
 
     args = parser.parse_args()
     return args
@@ -68,6 +69,7 @@ def main():
             cmd += ' --testset {}'.format(testset[test])
             for te in run_te:
                 cmd += ' --run_te {}'.format(te)
+                cmd += ' --timeout {}'.format(args.timeout)
                 print(cmd)
                 os.system(cmd)
                 iteration.set_description(
