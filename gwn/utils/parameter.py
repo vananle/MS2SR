@@ -86,6 +86,7 @@ def get_args():
 
     parser.add_argument('--timeout', type=float, default=1.0)
     parser.add_argument('--te_step', type=int, default=0)
+    parser.add_argument('--nrun', type=int, default=3)
 
     # get args
     args = parser.parse_args()
