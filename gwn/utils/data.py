@@ -250,7 +250,8 @@ def get_dataloader(args):
     saved_val_path = os.path.join(stored_path, 'val.pkl')
     saved_test_path = os.path.join(stored_path, 'test.pkl')
 
-    if not os.path.exists(saved_train_path):
+    if not os.path.exists(saved_train_path) \
+            or not os.path.exists(saved_val_path) or not os.path.exists(saved_test_path):
         train, val, test_list = train_test_split(X)
         trainset = data_preprocessing(data=train, args=args, gen_times=10, scaler=None)
         train_scaler = trainset['Scaler']
