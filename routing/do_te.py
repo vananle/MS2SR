@@ -360,7 +360,7 @@ def gwn_srls(yhat, y_gt, graphs, te_step, args):
         congested = mlu[mlu >= 1.0].size
         print('Congestion_rate: {}/{}'.format(congested, mlu.size))
 
-        save_results(args.log_dir, 'test_{}_gwn_srls_run{}'.format(args.testset, run_test), mlu, route_changes)
+        save_results(args.log_dir, 'test_{}_gwn_srls_run_{}'.format(args.testset, run_test), mlu, route_changes)
         np.save(os.path.join(args.log_dir, 'test_{}_gwn_srls_dyn'.format(args.testset)), dynamicity)
 
         # np.save(os.path.join(args.log_dir, 'LinkLoads_gwn_srls_{}'.format(args.testset)), LinkLoads)
