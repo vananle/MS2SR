@@ -11,7 +11,6 @@ from routing import *
 
 import warnings
 
-
 warnings.simplefilter("ignore")
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -146,6 +145,8 @@ def main(args, **model_kwargs):
         run_te(x_gt, y_gt, yhat, args)
 
 
+from datetime import date
+
 if __name__ == "__main__":
     args = utils.get_args()
     t1 = time.time()
@@ -153,3 +154,4 @@ if __name__ == "__main__":
     t2 = time.time()
     mins = (t2 - t1) / 60
     print("Total time spent: {:.2f} seconds".format(mins))
+    print('Date&Time: ', date.today())
