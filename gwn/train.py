@@ -139,9 +139,11 @@ def main(args, **model_kwargs):
     x_gt = x_gt.cpu().data.numpy()  # [timestep, seq_x, seq_y]
     y_gt = y_gt.cpu().data.numpy()
     yhat = yhat.cpu().data.numpy()
+    y_real = y_real.cpu().data.numpy()
     np.save(os.path.join(logger.log_dir, 'x_gt_test_{}'.format(args.testset)), x_gt)
     np.save(os.path.join(logger.log_dir, 'y_gt_test_{}'.format(args.testset)), y_gt)
     np.save(os.path.join(logger.log_dir, 'y_hat_test_{}'.format(args.testset)), yhat)
+    np.save(os.path.join(logger.log_dir, 'y_real_test_{}'.format(args.testset)), y_real)
 
     # run TE
     if args.run_te != 'None':
