@@ -81,9 +81,7 @@ def main():
                 print(cmd)
                 os.system(cmd)
                 iteration.set_description(
-                    'Dataset {} - testset {} te: {}'.format(dataset_name, testset[test], te))
-
-
+                    'Dataset {} - testset {} te: {}'.format(dataset_name, testset[test], run_te[0]))
         else:
             print(cmd)
             os.system(cmd)
