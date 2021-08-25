@@ -184,6 +184,8 @@ def data_preprocessing(data, args, gen_times=5, scaler=None):
             # Data for doing traffic engineering
             x_gt = oX[t * args.k:(t + len_x) * args.k]
             y_gt = oX[(t + len_x) * args.k: (t + len_x + len_y) * args.k]
+            if torch.max(x_gt) <= 1.0 or torch.max(y_gt) <= 1.0:
+                continue
 
             dataset['X'].append(x)  # [sample, len_x, k, 1]
             dataset['Y'].append(y)  # [sample, 1, k]
