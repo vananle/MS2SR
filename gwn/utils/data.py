@@ -212,6 +212,20 @@ def data_preprocessing(data, args, gen_times=5, scaler=None):
     return dataset
 
 
+def remove_outliers(data):
+    q25, q75 = np.percentile(data, 25, axis=0), np.percentile(data, 75, axis=0)
+    iqr = q75 - q25
+    cut_off = iqr * 3
+    lower, upper = q25 - cut_off, q75 + cut_off
+    for i in range(data.shape[1]):
+        flow = data[:, i]
+        flow[flow > upper[i]] = upper[i]
+        # flow[flow < lower[i]] = lower[i]
+        data[:, i] = flow
+
+    return data
+
+
 def train_test_split(X):
     train_size = int(X.shape[0] * 0.5)
     val_size = int(X.shape[0] * 0.1)
@@ -235,6 +249,9 @@ def train_test_split(X):
         X_test_list.append(X_test)
         if val_size + train_size + test_size * (i + 1) >= X.shape[0]:
             break
+
+    X_train = remove_outliers(X_train)
+    X_val = remove_outliers(X_val)
 
     return X_train, X_val, X_test_list
 
