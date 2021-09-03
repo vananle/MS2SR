@@ -118,36 +118,36 @@ def main(args, **model_kwargs):
                 iterator.set_description(description)
         except KeyboardInterrupt:
             pass
+    else:
+        # Metrics on test data
+        engine.model.load_state_dict(torch.load(logger.best_model_save_path))
+        with torch.no_grad():
+            test_met_df, x_gt, y_gt, y_real, yhat = engine.test(test_loader, engine.model, args.out_seq_len)
+            test_met_df.round(6).to_csv(os.path.join(logger.log_dir, 'summarized_test_metrics.csv'))
+            print('Prediction Accuracy:')
+            print(test_met_df)
 
-    # Metrics on test data
-    engine.model.load_state_dict(torch.load(logger.best_model_save_path))
-    with torch.no_grad():
-        test_met_df, x_gt, y_gt, y_real, yhat = engine.test(test_loader, engine.model, args.out_seq_len)
-        test_met_df.round(6).to_csv(os.path.join(logger.log_dir, 'summarized_test_metrics.csv'))
-        print('Prediction Accuracy:')
-        print(test_met_df)
+            test_met = []
+            for t in range(yhat.shape[0]):
+                for i in range(yhat.shape[1]):
+                    pred = yhat[t, i, :]
+                    real = y_real[t, i, :]
+                    test_met.append([x.item() for x in utils.calc_metrics(pred, real)])
+            test_met_df = pd.DataFrame(test_met, columns=['rse', 'mae', 'mse', 'mape', 'rmse']).rename_axis('t')
+            test_met_df.round(6).to_csv(os.path.join(logger.log_dir, 'test_metrics.csv'))
 
-        test_met = []
-        for t in range(yhat.shape[0]):
-            for i in range(yhat.shape[1]):
-                pred = yhat[t, i, :]
-                real = y_real[t, i, :]
-                test_met.append([x.item() for x in utils.calc_metrics(pred, real)])
-        test_met_df = pd.DataFrame(test_met, columns=['rse', 'mae', 'mse', 'mape', 'rmse']).rename_axis('t')
-        test_met_df.round(6).to_csv(os.path.join(logger.log_dir, 'test_metrics.csv'))
+        x_gt = x_gt.cpu().data.numpy()  # [timestep, seq_x, seq_y]
+        y_gt = y_gt.cpu().data.numpy()
+        yhat = yhat.cpu().data.numpy()
+        y_real = y_real.cpu().data.numpy()
+        np.save(os.path.join(logger.log_dir, 'x_gt_test'), x_gt)
+        np.save(os.path.join(logger.log_dir, 'y_gt_test'), y_gt)
+        np.save(os.path.join(logger.log_dir, 'y_hat_test'), yhat)
+        np.save(os.path.join(logger.log_dir, 'y_real_test'), y_real)
 
-    x_gt = x_gt.cpu().data.numpy()  # [timestep, seq_x, seq_y]
-    y_gt = y_gt.cpu().data.numpy()
-    yhat = yhat.cpu().data.numpy()
-    y_real = y_real.cpu().data.numpy()
-    np.save(os.path.join(logger.log_dir, 'x_gt_test'), x_gt)
-    np.save(os.path.join(logger.log_dir, 'y_gt_test'), y_gt)
-    np.save(os.path.join(logger.log_dir, 'y_hat_test'), yhat)
-    np.save(os.path.join(logger.log_dir, 'y_real_test'), y_real)
-
-    # run TE
-    if args.run_te != 'None':
-        run_te(x_gt, y_gt, yhat, args)
+        # run TE
+        if args.run_te != 'None':
+            run_te(x_gt, y_gt, yhat, args)
 
 
 from datetime import date
