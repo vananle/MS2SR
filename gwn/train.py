@@ -44,10 +44,8 @@ def main(args, **model_kwargs):
 
     train_loader, val_loader, test_loader, total_timesteps, total_series = utils.get_dataloader(args)
 
-    args.train_size, args.nSeries = train_loader.dataset.nsample, train_loader.dataset.nflows
-    args.val_size = val_loader.dataset.nsample
-    args.test_size = test_loader.dataset.nsample
     args.te_step = args.test_size
+    args.nSeries = total_series
 
     in_dim = 1
     if args.tod:
