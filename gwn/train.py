@@ -44,6 +44,7 @@ def main(args, **model_kwargs):
 
     train_loader, val_loader, test_loader, total_timesteps, total_series = utils.get_dataloader(args)
 
+    args.test_size = test_loader.dataset.nsample
     args.te_step = args.test_size
     args.nSeries = total_series
 
