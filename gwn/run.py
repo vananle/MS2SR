@@ -15,8 +15,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--dataset', type=str, default='abilene_tm',
-                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'brain5_tm', 'brain15_tm', 'abilene15_tm',
-                                 'brain10_tm', 'abilene10_tm'],
+                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'uninett_tm'],
                         help='Dataset, (default abilene_tm)')
     parser.add_argument('--test', action='store_true')
     parser.add_argument('--device', type=str, default='cuda:0')
