@@ -55,11 +55,8 @@ def main(args, **model_kwargs):
     for set in sets:
         if set == 'train' or set == 'val':
             args.test = False
-            args.testset = 0
         else:
             args.test = True
-            testset = int(set.split('_')[1])
-            args.testset = testset
 
         train_loader, val_loader, test_loader, total_timesteps, total_series = utils.get_dataloader(args)
 
@@ -107,7 +104,6 @@ def main(args, **model_kwargs):
 
         # run TE
         print(' SET: {}'.format(set))
-        args.testset = set
         # run_te(x_gt, y_gt, yhat, args)
 
         te_step = x_gt.shape[0]

@@ -226,34 +226,34 @@ def remove_outliers(data):
     return data
 
 
-def train_test_split(X):
-    train_size = int(X.shape[0] * 0.5)
-    val_size = int(X.shape[0] * 0.1)
-    test_size = X.shape[0] - train_size - val_size
+def train_test_split(X, dataset):
+    if 'abilene' in dataset:
+        train_size = 3 * 7 * 288  # 3 weeks
+        val_size = 288 * 7  # 1 week
+        test_size = 288 * 7 * 2  # 2 weeks
 
-    if train_size >= 7000:
-        train_size = 7000
-    if val_size >= 1000:
-        val_size = 1000
+    elif 'geant' in dataset:
+        train_size = 96 * 7 * 4 * 2  # 2 months
+        val_size = 96 * 7 * 2  # 2 weeks
+        test_size = 96 * 7 * 4  # 1 month
 
-    if test_size >= 1000:
-        test_size = 1000
+    elif 'brain' in dataset:
+        train_size = 1440 * 3  # 3 days
+        val_size = 1440  # 1 day
+        test_size = 1440 * 2  # 2 days
+    else:
+        raise NotImplementedError
 
     X_train = X[:train_size]
 
     X_val = X[train_size:val_size + train_size]
 
-    X_test_list = []
-    for i in range(10):
-        X_test = X[val_size + train_size + test_size * i: val_size + train_size + test_size * (i + 1)]
-        X_test_list.append(X_test)
-        if val_size + train_size + test_size * (i + 1) >= X.shape[0]:
-            break
+    X_test = X[val_size + train_size: val_size + train_size + test_size]
 
     X_train = remove_outliers(X_train)
     X_val = remove_outliers(X_val)
 
-    return X_train, X_val, X_test_list
+    return X_train, X_val, X_test
 
 
 def get_dataloader(args):
@@ -271,7 +271,7 @@ def get_dataloader(args):
 
     if not os.path.exists(saved_train_path) \
             or not os.path.exists(saved_val_path) or not os.path.exists(saved_test_path):
-        train, val, test_list = train_test_split(X)
+        train, val, test = train_test_split(X, args.dataset)
         trainset = data_preprocessing(data=train, args=args, gen_times=10, scaler=None)
         train_scaler = trainset['Scaler']
         with open(saved_train_path, 'wb') as fp:
@@ -284,40 +284,45 @@ def get_dataloader(args):
             pickle.dump(valset, fp, protocol=pickle.HIGHEST_PROTOCOL)
             fp.close()
 
-        testset_list = []
-        for i in range(len(test_list)):
-            print('Data preprocessing: TESTSET {}'.format(i))
-            testset = data_preprocessing(data=test_list[i], args=args, gen_times=1, scaler=train_scaler)
-            testset_list.append(testset)
+        print('Data preprocessing: TESTSET')
+        testset = data_preprocessing(data=test, args=args, gen_times=1, scaler=train_scaler)
 
         with open(saved_test_path, 'wb') as fp:
-            pickle.dump(testset_list, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(testset, fp, protocol=pickle.HIGHEST_PROTOCOL)
             fp.close()
     else:
         print('Load saved dataset from {}'.format(stored_path))
-        with open(saved_train_path, 'rb') as fp:
-            trainset = pickle.load(fp)
-            fp.close()
-        with open(saved_val_path, 'rb') as fp:
-            valset = pickle.load(fp)
-            fp.close()
+        if args.test:
+            trainset, valset = None, None
+        else:
+            with open(saved_train_path, 'rb') as fp:
+                trainset = pickle.load(fp)
+                fp.close()
+            with open(saved_val_path, 'rb') as fp:
+                valset = pickle.load(fp)
+                fp.close()
+
         with open(saved_test_path, 'rb') as fp:
-            testset_list = pickle.load(fp)
+            testset = pickle.load(fp)
             fp.close()
 
-    # Training set
-    train_set = TrafficDataset(trainset, args=args)
-    train_loader = DataLoader(train_set,
-                              batch_size=args.train_batch_size,
-                              shuffle=True)
+    if args.test:  # Only load testing set
+        train_loader = None
+        val_loader = None
+    else:
+        # Training set
+        train_set = TrafficDataset(trainset, args=args)
+        train_loader = DataLoader(train_set,
+                                  batch_size=args.train_batch_size,
+                                  shuffle=True)
 
-    # validation set
-    val_set = TrafficDataset(valset, args=args)
-    val_loader = DataLoader(val_set,
-                            batch_size=args.val_batch_size,
-                            shuffle=False)
+        # validation set
+        val_set = TrafficDataset(valset, args=args)
+        val_loader = DataLoader(val_set,
+                                batch_size=args.val_batch_size,
+                                shuffle=False)
 
-    test_set = TrafficDataset(testset_list[args.testset], args=args)
+    test_set = TrafficDataset(testset, args=args)
     test_loader = DataLoader(test_set,
                              batch_size=args.test_batch_size,
                              shuffle=False)

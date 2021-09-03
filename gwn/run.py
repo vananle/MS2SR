@@ -2,8 +2,6 @@ import argparse
 import os
 import subprocess as sp
 
-from tqdm import trange
-
 
 def call(args):
     p = sp.run(args=args,
@@ -48,45 +46,28 @@ def main():
         run_te = [args.run_te]
     # run_te = ['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2', 'p3', 'onestep',
     #           'prophet', 'laststep', 'laststep_ls2sr', 'firststep', 'or']
-    if args.test:
-        if args.testset == -1:
-            testset = [0, 1, 2, 3, 4]
-        else:
-            testset = [args.testset]
 
-    else:
-        testset = [0]
-
-    iteration = trange(len(testset))
     # experiment for each dataset
-    for test in iteration:
-        cmd = 'python train.py --do_graph_conv --aptonly --addaptadj --randomadj'
-        cmd += ' --train_batch_size 64 --val_batch_size 64'
-        cmd += ' --dataset {}'.format(dataset_name)
-        cmd += ' --device {}'.format(args.device)
-        cmd += ' --epochs {}'.format(args.epochs)
-        if args.test:
-            cmd += ' --test'
-            cmd += ' --testset {}'.format(testset[test])
-            if run_te[0] != 'None':
-                for te in run_te:
-                    cmd += ' --run_te {}'.format(te)
-                    cmd += ' --timeout {}'.format(args.timeout)
-                    cmd += ' --nrun {}'.format(args.nrun)
-                    print(cmd)
-                    os.system(cmd)
-                    iteration.set_description(
-                        'Dataset {} - testset {} te: {}'.format(dataset_name, testset[test], te))
-            else:
+    cmd = 'python train.py --do_graph_conv --aptonly --addaptadj --randomadj'
+    cmd += ' --train_batch_size 64 --val_batch_size 64'
+    cmd += ' --dataset {}'.format(dataset_name)
+    cmd += ' --device {}'.format(args.device)
+    cmd += ' --epochs {}'.format(args.epochs)
+    if args.test:
+        cmd += ' --test'
+        if run_te[0] != 'None':
+            for te in run_te:
+                cmd += ' --run_te {}'.format(te)
+                cmd += ' --timeout {}'.format(args.timeout)
+                cmd += ' --nrun {}'.format(args.nrun)
                 print(cmd)
                 os.system(cmd)
-                iteration.set_description(
-                    'Dataset {} - testset {} te: {}'.format(dataset_name, testset[test], run_te[0]))
         else:
             print(cmd)
             os.system(cmd)
-            iteration.set_description(
-                'Dataset {} - testset {}'.format(dataset_name, testset[test]))
+    else:
+        print(cmd)
+        os.system(cmd)
 
 
 if __name__ == '__main__':
