@@ -241,6 +241,10 @@ def train_test_split(X, dataset):
         train_size = 1440 * 3  # 3 days
         val_size = 1440  # 1 day
         test_size = 1440 * 2  # 2 days
+    elif 'uninett' in dataset:  # granularity: 1 hour
+        train_size = 2688  # 4 months
+        val_size = 672  # 1 month
+        test_size = 1344  # 2 months
     else:
         raise NotImplementedError
 
