@@ -139,7 +139,7 @@ class LS2SRSolver:
         return link2flow
 
     def compute_path(self):
-        folder = os.path.join(self.args.datapath, 'ls2sr/precompute_path')
+        folder = os.path.join(self.args.datapath, 'topo/segments/ls2sr/')
         if not os.path.exists(folder):
             os.makedirs(folder)
         path = os.path.join(folder, '{}.pkl'.format(self.args.dataset))
