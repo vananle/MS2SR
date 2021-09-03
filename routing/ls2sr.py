@@ -158,8 +158,6 @@ class LS2SRSolver:
             }
             save(path, data)
 
-        print(self.flow2link)
-
     def get_solution_bound(self, flow2link):
         ub = np.empty([self.N, self.N], dtype=int)
         for i, j in itertools.product(range(self.N), range(self.N)):
