@@ -80,7 +80,7 @@ class LS2SRSolver:
             return None, None
 
         edges = []
-        # compute edges from path p_ik, p_kj (which is 2 lists of nodes)
+        # compute edges from path p_ik, p_kj (which are 2 lists of nodes)
         for u, v in zip(p_ik[:-1], p_ik[1:]):
             edges.append((u, v))
         for u, v in zip(p_kj[:-1], p_kj[1:]):
@@ -120,8 +120,8 @@ class LS2SRSolver:
         """
         flow2link = {}
 
-        list_paths = Parallel(n_jobs=os.cpu_count())(delayed(self.get_paths)(i, j)
-                                                     for i, j in itertools.product(range(self.N), range(self.N)))
+        list_paths = Parallel(n_jobs=1)(delayed(self.get_paths)(i, j)
+                                        for i, j in itertools.product(range(self.N), range(self.N)))
         for i, j in itertools.product(range(self.N), range(self.N)):
             flow2link[i, j] = list_paths[i * self.N + j]
 
@@ -158,6 +158,8 @@ class LS2SRSolver:
             }
             save(path, data)
 
+        print(self.flow2link)
+
     def get_solution_bound(self, flow2link):
         ub = np.empty([self.N, self.N], dtype=int)
         for i, j in itertools.product(range(self.N), range(self.N)):
@@ -171,7 +173,8 @@ class LS2SRSolver:
     def g(self, i, j, u, v, k):
         if (u, v) in self.flow2link[(i, j)][k]:
             return 1
-        return 0
+        else:
+            return 0
 
     def has_path(self, i, j):
         if self.flow2link[(i, j)]:
