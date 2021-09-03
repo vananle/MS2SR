@@ -158,7 +158,5 @@ def print_args(args):
     print('    - plot_results           :', args.plot)
     print('---------------------------------------------------------')
     print('    - run te                 :', args.run_te)
-    # print('    - routing        :', args.routing)
-    # print('    - mon_policy     :', args.mon_policy)
     print('    - te_step                :', args.te_step)
     print('---------------------------------------------------------')
