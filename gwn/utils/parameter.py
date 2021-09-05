@@ -146,20 +146,20 @@ def get_args():
                 args.kernel_size = 2
                 args.stride = 2
             elif args.seq_len_y == 36:
-                args.blocks = 3
-                args.layers = 2
-                args.kernel_size = 4
-                args.stride = 4
+                args.blocks = 5
+                args.layers = 3
+                args.kernel_size = 2
+                args.stride = 2
             elif args.seq_len_y == 48:
                 args.blocks = 5
                 args.layers = 1
                 args.kernel_size = 4
                 args.stride = 4
             elif args.seq_len_y == 60:
-                args.blocks = 9
-                args.layers = 3
-                args.kernel_size = 2
-                args.stride = 2
+                args.blocks = 5
+                args.layers = 1
+                args.kernel_size = 4
+                args.stride = 4
             elif args.seq_len_y == 72:
                 args.blocks = 5
                 args.layers = 2
