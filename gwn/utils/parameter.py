@@ -53,8 +53,8 @@ def get_args():
     parser.add_argument('--blocks', type=int, default=5, help='')
     parser.add_argument('--layers', type=int, default=3, help='')
     parser.add_argument('--hidden', type=int, default=32, help='Number of channels for internal conv')
-    parser.add_argument('--kernel_size', type=int, default=2, help='kernel_size for internal conv')
-    parser.add_argument('--stride', type=int, default=2, help='stride for internal conv')
+    parser.add_argument('--kernel_size', type=int, default=4, help='kernel_size for internal conv')
+    parser.add_argument('--stride', type=int, default=4, help='stride for internal conv')
     parser.add_argument('--dropout', type=float, default=0.3, help='dropout rate')
     parser.add_argument('--n_obs', default=None, help='Only use this many observations. For unit testing.')
     parser.add_argument('--cat_feat_gc', action='store_true')
@@ -115,6 +115,9 @@ def get_args():
         args.blocks = 7
         args.layers = 3
     elif args.seq_len_y == 60:
+        args.blocks = 9
+        args.layers = 3
+    elif args.seq_len_y == 72:
         args.blocks = 9
         args.layers = 3
 
