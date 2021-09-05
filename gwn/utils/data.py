@@ -81,10 +81,10 @@ class TrafficDataset(Dataset):
 
         self.type = args.type
         self.out_seq_len = args.out_seq_len
-        self.X = self.np2torch(dataset['X'])
-        self.Y = self.np2torch(dataset['Y'])
-        self.Xgt = self.np2torch(dataset['Xgt'])
-        self.Ygt = self.np2torch(dataset['Ygt'])
+        self.X = dataset['X']
+        self.Y = dataset['Y']
+        self.Xgt = dataset['Xgt']
+        self.Ygt = dataset['Ygt']
         self.scaler = dataset['Scaler']
 
         self.nsample, self.len_x, self.nflows, self.nfeatures = self.X.shape
@@ -98,10 +98,10 @@ class TrafficDataset(Dataset):
     def __getitem__(self, idx):
         t = self.indices[idx]
 
-        x = self.X[t]
-        y = self.Y[t]
-        xgt = self.Xgt[t]
-        ygt = self.Ygt[t]
+        x = self.np2torch(self.X[t])
+        y = self.np2torch(self.Y[t])
+        xgt = self.np2torch(self.Xgt[t])
+        ygt = self.np2torch(self.Ygt[t])
         sample = {'x': x, 'y': y, 'x_gt': xgt, 'y_gt': ygt}
         return sample
 
