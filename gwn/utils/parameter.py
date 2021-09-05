@@ -80,9 +80,11 @@ def get_args():
     parser.add_argument('--plot', action='store_true')
 
     # parameter for test_routing
+    parser.add_argument('--ncf', default=10, type=int, help='default 10')
     parser.add_argument('--run_te', type=str, choices=['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2',
                                                        'p3', 'onestep', 'prophet', 'laststep', 'laststep_ls2sr',
-                                                       'firststep', 'or', 'gwn_srls', 'gt_srls', 'srls_p0'],
+                                                       'firststep', 'or', 'gwn_srls', 'gt_srls', 'srls_p0',
+                                                       'gwn_cfr_topk'],
                         default='None')
 
     parser.add_argument('--timeout', type=float, default=1.0)
@@ -221,4 +223,5 @@ def print_args(args):
     print('---------------------------------------------------------')
     print('    - run te                 :', args.run_te)
     print('    - te_step                :', args.te_step)
+    print('    - ncf                    :', args.ncf)
     print('---------------------------------------------------------')

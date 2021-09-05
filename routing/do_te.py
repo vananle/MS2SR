@@ -261,7 +261,7 @@ def gwn_ls2sr(yhat, y_gt, graph, te_step, args):
 
 def gwn_cfr_topk(yhat, y_gt, graph, segments, te_step, args):
     print('gwn_cfr_topk')
-    num_cf = int((args.num_cf / 100.0) * args.nSeries)
+    num_cf = int((args.ncf / 100.0) * args.nSeries)
     results = []
     solver = MSSRCFR_Solver(G=graph, segments=segments)
 
