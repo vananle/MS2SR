@@ -963,7 +963,7 @@ def p2_cfr(solver, tm, gt_tms, pSolution, nNodes, num_cf):
     solution = solver.solve(tm=tm, rTm=rTm, flow_idx=srcdst_idx, pSolution=pSolution)
 
     for i in range(gt_tms.shape[0]):
-        u.append(solver.evaluate(solution, gt_tms[i]))
+        u.append(solver.evaluate(solution=solution, tm=gt_tms[i]))
     return u, solution
 
 

@@ -81,11 +81,11 @@ class MSSRCFR_Solver:
             src, dst = self.flow_idx[f]
             self.solution[src, dst, k] = self.var_dict['x_{}'.format(index)]
 
-    def evaluate(self, tm):
+    def evaluate(self, solution, tm):
         # extract utilization
         mlu = 0
         for u, v in self.G.edges:
-            load = sum([self.solution[i, j, k] * tm[i, j] * util.g(self.segments, i, j, k, u, v) for i, j, k in
+            load = sum([solution[i, j, k] * tm[i, j] * util.g(self.segments, i, j, k, u, v) for i, j, k in
                         itertools.product(range(self.num_node), range(self.num_node), range(self.num_node))])
             capacity = self.G.get_edge_data(u, v)['capacity']
             utilization = load / capacity
@@ -128,12 +128,14 @@ class MSSRCFR_Solver:
         pSolution: previous solution (use initial solution if no previous solution)
         """
         rCapa = self.p_routing(rTm, pSolution)
-        print('rCapa', rCapa)
         problem, x = self.create_problem(tm, flow_idx, rCapa)
+
+        self.solution = np.copy(pSolution)
         problem.solve()
         self.problem = problem
         self.extract_status(problem)
         self.extract_solution(problem)
+        return self.solution
 
     def get_paths(self, i, j):
         if i == j:
