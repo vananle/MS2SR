@@ -30,6 +30,7 @@ def get_args():
     parser.add_argument('--timeout', type=float, default=1.0)
     parser.add_argument('--nrun', type=int, default=3)
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--seq_len_x', type=int, default=12, choices=[12, 24, 36, 48], help='input length default 64')
 
     args = parser.parse_args()
     return args
@@ -53,6 +54,8 @@ def main():
     cmd += ' --dataset {}'.format(dataset_name)
     cmd += ' --device {}'.format(args.device)
     cmd += ' --epochs {}'.format(args.epochs)
+    cmd += ' --seq_len_x {}'.format(args.seq_len_x)
+
     if args.verbose:
         cmd += ' --verbose'
 
