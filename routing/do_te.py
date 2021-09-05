@@ -932,8 +932,12 @@ def p2_heuristic_solver(solver, tm, gt_tms, p_solution, nNodes):
 
 
 def flowidx2srcdst(flow_idx, nNodes):
-    src = int(flow_idx / nNodes)
+    src = flow_idx / nNodes
+    src = src.astype(np.int)
+
     dst = flow_idx % nNodes
+    dst = dst.astype(np.int)
+
     srcdst_idx = np.stack([src, dst], axis=1)
     return srcdst_idx
 
