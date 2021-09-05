@@ -119,7 +119,7 @@ def get_args():
             args.kernel_size = 4
             args.stride = 4
         elif args.seq_len_y == 48:
-            args.blocks = 4
+            args.blocks = 3
             args.layers = 2
             args.kernel_size = 4
             args.stride = 4
