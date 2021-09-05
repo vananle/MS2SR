@@ -946,10 +946,8 @@ def p2_cfr(solver, tm, gt_tms, pSolution, nNodes, num_cf):
     u = []
 
     tm = tm.flatten()
-    print('tm', tm)
     topk_idx = np.argsort(tm)[::-1]
     topk_idx = topk_idx[:num_cf]
-    print('topk_idx', topk_idx)
 
     rTm = np.copy(tm)
     rTm[topk_idx] = 0

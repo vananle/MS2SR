@@ -128,6 +128,7 @@ class MSSRCFR_Solver:
         pSolution: previous solution (use initial solution if no previous solution)
         """
         rCapa = self.p_routing(rTm, pSolution)
+        print('rCapa', rCapa)
         problem, x = self.create_problem(tm, flow_idx, rCapa)
         problem.solve()
         self.problem = problem
