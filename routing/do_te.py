@@ -1,8 +1,8 @@
 from tqdm import tqdm
 
-from mssr_cfr import MSSRCFR_Solver
 from .ls2sr import LS2SRSolver
 from .max_step_sr import MaxStepSRSolver
+from .mssr_cfr import MSSRCFR_Solver
 from .multi_step_sr import MultiStepSRSolver
 from .oblivious_routing import ObliviousRoutingSolver
 from .one_step_sr import OneStepSRSolver
