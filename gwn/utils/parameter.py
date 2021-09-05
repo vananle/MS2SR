@@ -115,7 +115,7 @@ def get_args():
         args.blocks = 7
         args.layers = 3
     elif args.seq_len_y == 60:
-        args.blocks = 8
+        args.blocks = 9
         args.layers = 3
 
     return args
