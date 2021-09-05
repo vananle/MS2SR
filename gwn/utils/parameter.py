@@ -114,9 +114,9 @@ def get_args():
         args.stride = 2
     elif args.seq_len_y == 36:
         args.blocks = 5
-        args.layers = 3
-        args.kernel_size = 2
-        args.stride = 2
+        args.layers = 2
+        args.kernel_size = 4
+        args.stride = 4
     elif args.seq_len_y == 48:
         args.blocks = 7
         args.layers = 3
