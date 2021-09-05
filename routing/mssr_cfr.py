@@ -17,8 +17,6 @@ class MSSRCFR_Solver:
         self.G = G
         self.num_node = G.number_of_nodes()
         self.nflows = 0
-        print('Num_Flows: ', self.nflows)
-        print('Num_Nodes: ', self.num_node)
         self.segments = segments
         self.problem = None
         self.var_dict = None
