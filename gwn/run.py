@@ -29,6 +29,7 @@ def get_args():
     parser.add_argument('--epochs', type=int, default=100, help='')
     parser.add_argument('--timeout', type=float, default=1.0)
     parser.add_argument('--nrun', type=int, default=3)
+    parser.add_argument('--verbose', action='store_true')
 
     args = parser.parse_args()
     return args
@@ -52,6 +53,9 @@ def main():
     cmd += ' --dataset {}'.format(dataset_name)
     cmd += ' --device {}'.format(args.device)
     cmd += ' --epochs {}'.format(args.epochs)
+    if args.verbose:
+        cmd += ' --verbose'
+
     if args.test:
         cmd += ' --test'
         if run_te[0] != 'None':
