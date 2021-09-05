@@ -1,4 +1,5 @@
 import itertools
+import time
 
 import numpy as np
 import pulp as pl
@@ -129,7 +130,9 @@ class MSSRCFR_Solver:
         problem, x = self.create_problem(tm, flow_idx, rCapa)
 
         self.solution = np.copy(pSolution)
+        stime = time.time()
         problem.solve()
+        print('solving time: ', time.time() - stime)
         self.problem = problem
         self.extract_status(problem)
         self.extract_solution(problem)
