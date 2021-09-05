@@ -101,38 +101,70 @@ def get_args():
             args.seq_len_y = int(args.seq_len_y / args.trunk) * args.trunk
         args.out_seq_len = args.trunk
 
-    args.seq_len_y = args.seq_len_x
-    if args.seq_len_y == 12:
-        args.blocks = 4
-        args.layers = 2
-        args.kernel_size = 2
-        args.stride = 2
-    elif args.seq_len_y == 24:
-        args.blocks = 4
-        args.layers = 3
-        args.kernel_size = 2
-        args.stride = 2
-    elif args.seq_len_y == 36:
-        args.blocks = 3
-        args.layers = 2
-        args.kernel_size = 4
-        args.stride = 4
-    elif args.seq_len_y == 48:
-        args.blocks = 5
-        args.layers = 2
-        args.kernel_size = 4
-        args.stride = 4
-    elif args.seq_len_y == 60:
-        args.blocks = 9
-        args.layers = 3
-        args.kernel_size = 2
-        args.stride = 2
-    elif args.seq_len_y == 72:
-        args.blocks = 5
-        args.layers = 2
-        args.kernel_size = 4
-        args.stride = 4
-
+    if 'geant' in args.dataset:
+        args.seq_len_y = args.seq_len_x
+        if args.seq_len_y == 12:
+            args.blocks = 4
+            args.layers = 2
+            args.kernel_size = 2
+            args.stride = 2
+        elif args.seq_len_y == 24:
+            args.blocks = 4
+            args.layers = 3
+            args.kernel_size = 2
+            args.stride = 2
+        elif args.seq_len_y == 36:
+            args.blocks = 3
+            args.layers = 1
+            args.kernel_size = 4
+            args.stride = 4
+        elif args.seq_len_y == 48:
+            args.blocks = 5
+            args.layers = 1
+            args.kernel_size = 4
+            args.stride = 4
+        elif args.seq_len_y == 60:
+            args.blocks = 9
+            args.layers = 3
+            args.kernel_size = 2
+            args.stride = 2
+        elif args.seq_len_y == 72:
+            args.blocks = 5
+            args.layers = 2
+            args.kernel_size = 4
+            args.stride = 4
+        else:
+            args.seq_len_y = args.seq_len_x
+            if args.seq_len_y == 12:
+                args.blocks = 4
+                args.layers = 2
+                args.kernel_size = 2
+                args.stride = 2
+            elif args.seq_len_y == 24:
+                args.blocks = 4
+                args.layers = 3
+                args.kernel_size = 2
+                args.stride = 2
+            elif args.seq_len_y == 36:
+                args.blocks = 3
+                args.layers = 2
+                args.kernel_size = 4
+                args.stride = 4
+            elif args.seq_len_y == 48:
+                args.blocks = 5
+                args.layers = 1
+                args.kernel_size = 4
+                args.stride = 4
+            elif args.seq_len_y == 60:
+                args.blocks = 9
+                args.layers = 3
+                args.kernel_size = 2
+                args.stride = 2
+            elif args.seq_len_y == 72:
+                args.blocks = 5
+                args.layers = 2
+                args.kernel_size = 4
+                args.stride = 4
     return args
 
 
