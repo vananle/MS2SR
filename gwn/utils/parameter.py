@@ -41,8 +41,8 @@ def get_args():
     parser.add_argument('--apt_size', default=10, type=int, help='default 10')
 
     # Wavenet
-    parser.add_argument('--seq_len_x', type=int, default=36, help='input length default 64')
-    parser.add_argument('--seq_len_y', type=int, default=36, help='routing cycle 12')
+    parser.add_argument('--seq_len_x', type=int, default=36, choices=[12, 24, 36], help='input length default 64')
+    parser.add_argument('--seq_len_y', type=int, default=36, choices=[12, 24, 36], help='routing cycle 12')
 
     parser.add_argument('--dilation_channels', type=int, default=32, help='inputs dimension (default 32)')
     parser.add_argument('--residual_channels', type=int, default=32, help='inputs dimension')
@@ -99,6 +99,17 @@ def get_args():
         if args.seq_len_y % args.trunk != 0:
             args.seq_len_y = int(args.seq_len_y / args.trunk) * args.trunk
         args.out_seq_len = args.trunk
+
+    args.seq_len_y = args.seq_len_x
+    if args.seq_len_y == 12:
+        args.blocks = 4
+        args.layers = 2
+    elif args.seq_len_y == 24:
+        args.blocks = 4
+        args.layers = 3
+    elif args.seq_len_y == 36:
+        args.blocks = 5
+        args.layers = 3
 
     return args
 
