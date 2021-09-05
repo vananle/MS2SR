@@ -1,5 +1,6 @@
 from tqdm import tqdm
 
+from mssr_cfr import MSSRCFR_Solver
 from .ls2sr import LS2SRSolver
 from .max_step_sr import MaxStepSRSolver
 from .multi_step_sr import MultiStepSRSolver
@@ -256,6 +257,50 @@ def gwn_ls2sr(yhat, y_gt, graph, te_step, args):
 
         save_results(args.log_dir, 'gwn_ls2sr_run_{}'.format(run_test), mlu, route_changes)
         np.save(os.path.join(args.log_dir, 'gwn_ls2sr_dyn_run_{}'.format(run_test)), dynamicity)
+
+
+def gwn_cfr_topk(yhat, y_gt, graph, segments, te_step, args):
+    print('gwn_cfr_topk')
+    num_cf = int((args.num_cf / 100.0) * args.nSeries)
+    results = []
+    solver = MSSRCFR_Solver(G=graph, segments=segments)
+
+    solution = None
+    dynamicity = np.zeros(shape=(te_step, 7))
+    for i in tqdm(range(te_step)):
+        mean = np.mean(y_gt[i], axis=1)
+        std_mean = np.std(mean)
+        std = np.std(y_gt[i], axis=1)
+        std_std = np.std(std)
+
+        maxmax_mean = np.max(y_gt[i]) / np.mean(y_gt[i])
+
+        theo_lamda = calculate_lamda(y_gt=y_gt[i])
+
+        pred_tm = yhat[i]
+        u, solution = p2_cfr(solver=solver, tm=pred_tm,
+                             gt_tms=y_gt[i], pSolution=solution, nNodes=args.nNodes, num_cf=num_cf)
+
+        dynamicity[i] = [np.sum(y_gt[i]), std_mean, std_std, np.sum(std), maxmax_mean, np.mean(u), theo_lamda]
+
+        _solution = np.copy(solution)
+        results.append((u, _solution))
+
+    mlu, solution = extract_results(results)
+    route_changes = get_route_changes_heuristic(solution)
+    print('---> Num CF: ', num_cf, ' <---')
+    print('Route changes: Avg {:.3f} std {:.3f}'.format(np.sum(route_changes) /
+                                                        (args.seq_len_y * route_changes.shape[0]),
+                                                        np.std(route_changes)))
+    print('gwn_cfr_topk  {}      | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(args.model,
+                                                                             np.min(mlu),
+                                                                             np.mean(mlu),
+                                                                             np.max(mlu),
+                                                                             np.std(mlu)))
+    congested = mlu[mlu >= 1.0].size
+    print('Congestion_rate: {}/{}'.format(congested, mlu.size))
+
+    save_results(args.log_dir, 'gwn_cfr_topk_nCf_{}'.format(num_cf), mlu, route_changes)
 
 
 def createGraph_srls(NodesFile, EdgesFile):
@@ -886,6 +931,41 @@ def p2_heuristic_solver(solver, tm, gt_tms, p_solution, nNodes):
     return u, solution
 
 
+def flowidx2srcdst(flow_idx, nNodes):
+    src = int(flow_idx / nNodes)
+    dst = flow_idx % nNodes
+    srcdst_idx = np.stack([src, dst], axis=1)
+    return srcdst_idx
+
+
+def p2_cfr(solver, tm, gt_tms, pSolution, nNodes, num_cf):
+    u = []
+
+    tm = tm.flatten()
+    topk_idx = np.argsort(tm)[::-1]
+    topk_idx = topk_idx[:num_cf]
+
+    rTm = np.copy(tm)
+    rTm[topk_idx] = 0
+    rTm = rTm.reshape((nNodes, nNodes))
+
+    tm = tm.reshape((-1, nNodes, nNodes))
+    gt_tms = gt_tms.reshape((-1, nNodes, nNodes))
+
+    gt_tms[gt_tms <= 0.0] = 0.0
+
+    tm[:] = tm[:] * (1.0 - np.eye(nNodes))
+    gt_tms[:] = gt_tms[:] * (1.0 - np.eye(nNodes))
+    tm = tm.reshape((nNodes, nNodes))
+
+    srcdst_idx = flowidx2srcdst(flow_idx=topk_idx, nNodes=nNodes)
+    solution = solver.solve(tm=tm, rTm=rTm, flow_idx=srcdst_idx, pSolution=pSolution)
+
+    for i in range(gt_tms.shape[0]):
+        u.append(solver.evaluate(solution, gt_tms[i]))
+    return u, solution
+
+
 def p2_srls_solver(solver, tm, gt_tms, nNodes):
     u = []
     tm = tm.reshape((-1, nNodes, nNodes))
@@ -1040,6 +1120,9 @@ def run_te(x_gt, y_gt, yhat, args):
 
     if args.run_te == 'gwn_ls2sr':
         gwn_ls2sr(yhat, y_gt, graph, te_step, args)
+    elif args.run_te == 'gwn_cfr_topk':  # (critical flows rerouting)
+        segments = compute_path(graph, args.dataset, args.datapath)
+        gwn_cfr_topk(yhat, y_gt, graph, segments, te_step, args)
     elif args.run_te == 'gwn_srls':
         graphs = createGraph_srls(os.path.join(args.datapath, 'topo/{}_node.csv'.format(args.dataset)),
                                   os.path.join(args.datapath, 'topo/{}_edge.csv'.format(args.dataset)))
