@@ -111,7 +111,7 @@ def get_args():
         args.blocks = 5
         args.layers = 3
     elif args.seq_len_y == 48:
-        args.blocks = 6
+        args.blocks = 7
         args.layers = 3
 
     return args
