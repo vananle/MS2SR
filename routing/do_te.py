@@ -953,14 +953,11 @@ def p2_cfr(solver, tm, gt_tms, pSolution, nNodes, num_cf):
     rTm[topk_idx] = 0
     rTm = rTm.reshape((nNodes, nNodes))
 
-    tm = tm.reshape((-1, nNodes, nNodes))
+    tm = tm[topk_idx]
+
     gt_tms = gt_tms.reshape((-1, nNodes, nNodes))
-
     gt_tms[gt_tms <= 0.0] = 0.0
-
-    tm[:] = tm[:] * (1.0 - np.eye(nNodes))
     gt_tms[:] = gt_tms[:] * (1.0 - np.eye(nNodes))
-    tm = tm.flatten()
 
     srcdst_idx = flowidx2srcdst(flow_idx=topk_idx, nNodes=nNodes)
     solution = solver.solve(tm=tm, rTm=rTm, flow_idx=srcdst_idx, pSolution=pSolution)
