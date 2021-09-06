@@ -107,10 +107,10 @@ def get_args():
     if 'geant' in args.dataset:
         args.seq_len_y = args.seq_len_x
         if args.seq_len_y == 6:
-            args.blocks = 4
+            args.blocks = 3
             args.layers = 2
-            args.kernel_size = 1
-            args.stride = 1
+            args.kernel_size = 2
+            args.stride = 2
         elif args.seq_len_y == 12:
             args.blocks = 4
             args.layers = 2
@@ -144,10 +144,10 @@ def get_args():
     else:
         args.seq_len_y = args.seq_len_x
         if args.seq_len_y == 6:
-            args.blocks = 4
+            args.blocks = 3
             args.layers = 2
-            args.kernel_size = 1
-            args.stride = 1
+            args.kernel_size = 2
+            args.stride = 2
         elif args.seq_len_y == 12:
             args.blocks = 4
             args.layers = 2
