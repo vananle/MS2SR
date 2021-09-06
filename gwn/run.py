@@ -33,6 +33,7 @@ def get_args():
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--seq_len_x', type=int, default=12, choices=[12, 24, 36, 48, 60, 72],
                         help='input length default 64')
+    parser.add_argument('--ncf', default=10, type=int, help='default 10')
 
     args = parser.parse_args()
     return args
@@ -57,6 +58,7 @@ def main():
     cmd += ' --device {}'.format(args.device)
     cmd += ' --epochs {}'.format(args.epochs)
     cmd += ' --seq_len_x {}'.format(args.seq_len_x)
+    cmd += ' --ncf {}'.format(args.ncf)
 
     if args.verbose:
         cmd += ' --verbose'
