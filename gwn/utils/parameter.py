@@ -104,7 +104,7 @@ def get_args():
             args.seq_len_y = int(args.seq_len_y / args.trunk) * args.trunk
         args.out_seq_len = args.trunk
 
-    if 'geant' in args.dataset:
+    if 'geant' in args.dataset or 'renater' in args.dataset:
         args.seq_len_y = args.seq_len_x
         if args.seq_len_y == 6:
             args.blocks = 2
@@ -116,6 +116,11 @@ def get_args():
             args.layers = 2
             args.kernel_size = 2
             args.stride = 2
+        elif args.seq_len_y == 18:
+            args.blocks = 4
+            args.layers = 2
+            args.kernel_size = 3
+            args.stride = 3
         elif args.seq_len_y == 24:
             args.blocks = 4
             args.layers = 3
