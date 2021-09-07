@@ -117,15 +117,15 @@ def get_args():
             args.kernel_size = 2
             args.stride = 2
         elif args.seq_len_y == 18:
-            args.blocks = 3
+            args.blocks = 2
             args.layers = 2
             args.kernel_size = 3
             args.stride = 3
         elif args.seq_len_y == 24:
-            args.blocks = 4
-            args.layers = 3
-            args.kernel_size = 2
-            args.stride = 2
+            args.blocks = 3
+            args.layers = 2
+            args.kernel_size = 3
+            args.stride = 3
         elif args.seq_len_y == 36:
             args.blocks = 3
             args.layers = 1
