@@ -117,7 +117,7 @@ def get_args():
             args.kernel_size = 2
             args.stride = 2
         elif args.seq_len_y == 18:
-            args.blocks = 4
+            args.blocks = 3
             args.layers = 2
             args.kernel_size = 3
             args.stride = 3
