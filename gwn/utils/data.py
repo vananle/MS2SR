@@ -245,6 +245,10 @@ def train_test_split(X, dataset):
         train_size = 2688  # 4 months
         val_size = 672  # 1 month
         test_size = 1344  # 2 months
+    elif 'renater' in dataset:  # granularity: 1 hour
+        train_size = 2688  # 4 months
+        val_size = 672  # 1 month
+        test_size = 1344  # 2 months
     else:
         raise NotImplementedError
 
@@ -254,8 +258,9 @@ def train_test_split(X, dataset):
 
     X_test = X[val_size + train_size: val_size + train_size + test_size]
 
-    X_train = remove_outliers(X_train)
-    X_val = remove_outliers(X_val)
+    if 'abilene' in dataset or 'geant' in dataset or 'brain' in dataset:
+        X_train = remove_outliers(X_train)
+        X_val = remove_outliers(X_val)
 
     return X_train, X_val, X_test
 
