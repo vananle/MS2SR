@@ -31,8 +31,10 @@ def get_args():
     parser.add_argument('--timeout', type=float, default=1.0)
     parser.add_argument('--nrun', type=int, default=3)
     parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('--seq_len_x', type=int, default=12, choices=[6, 12, 24, 36, 48, 60, 72],
+    parser.add_argument('--seq_len_x', type=int, default=36, choices=[6, 12, 18, 24, 30, 36, 48],
                         help='input length default 64')
+    parser.add_argument('--seq_len_y', type=int, default=36, choices=[6, 12, 18, 24, 30, 36, 48],
+                        help='routing cycle 12')
     parser.add_argument('--ncf', default=10, type=int, help='default 10')
 
     args = parser.parse_args()
