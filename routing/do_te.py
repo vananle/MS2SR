@@ -476,7 +476,8 @@ def vae_gen_data(x_gt, y_gt, graphs, te_step, args):
 
     solver = SRLS(sp, capacity, nNodes, nEdges, args.timeout)
     LL, LM, As, TMs = [], [], [], []
-
+    x_gt[x_gt < 10e-6] = 10e-5
+    y_gt[y_gt < 10e-6] = 10e-5
     for i in tqdm(range(te_step)):
 
         T0 = np.max(x_gt[i], axis=0)
