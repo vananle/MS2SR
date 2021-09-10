@@ -469,6 +469,57 @@ def gt_srls(y_gt, graphs, te_step, args):
         # np.save(os.path.join(args.log_dir, 'TMs_gwn_srls'), TMs)
 
 
+def vae_gen_data(x_gt, y_gt, graphs, te_step, args):
+    print('------->>> SRLS_VAE <<<-------')
+    G, nNodes, nEdges, capacity, sp = graphs
+
+    solver = SRLS(sp, capacity, nNodes, nEdges, args.timeout)
+    LL, LM, As, TMs = [], [], [], []
+
+    for i in tqdm(range(te_step)):
+
+        T0 = np.max(x_gt[i], axis=0)
+        solver.modifierTrafficMatrix(np.reshape(T0, newshape=(nNodes, nNodes)))
+        solver.solve()
+        A = solver.extractRoutingPath()
+        L0 = np.zeros(shape=(x_gt[i].shape[0], nEdges))
+        for j in range(x_gt[i].shape[0]):
+            tm = x_gt[i, j]
+            tm = np.reshape(tm, newshape=(nNodes, nNodes))
+            l = solver.getLinkload(routingSolution=A, trafficMatrix=tm)
+            l = np.squeeze(l, axis=-1)
+            L0[j] = l
+
+        T = np.max(y_gt[i], axis=0)
+        tm = np.reshape(T, newshape=(nNodes, nNodes))
+        l = solver.getLinkload(routingSolution=A, trafficMatrix=tm)
+        L = np.squeeze(l, axis=-1)
+
+        LL.append(L0)
+        LM.append(L)
+        As.append(A)
+        TMs.append(T)
+
+    LL = np.stack(LL, axis=0)
+    LM = np.stack(LM, axis=0)
+    As = np.stack(As, axis=0)
+    TMs = np.stack(TMs, axis=0)
+
+    if te_step < 100:
+        set = 'val'
+    else:
+        set = 'train'
+
+    np.save(os.path.join(args.log_dir, '{}_LL'.format(set)), LL)
+    np.save(os.path.join(args.log_dir, '{}_LM'.format(set)), LM)
+    np.save(os.path.join(args.log_dir, '{}_A'.format(set)), As)
+    np.save(os.path.join(args.log_dir, '{}_TM'.format(set)), TMs)
+    print('LL shape: ', LL.shape)
+    print('LM shape: ', LM.shape)
+    print('As shape: ', As.shape)
+    print('TMs shape: ', TMs.shape)
+
+
 def srls_p0(y_gt, graphs, te_step, args):
     print('srls_p0')
     G, nNodes, nEdges, capacity, sp = graphs
@@ -1114,14 +1165,15 @@ def oblivious_sr(solver, tms):
 
 def run_te(x_gt, y_gt, yhat, args):
     print('|--- run TE on DIRECTED graph')
-    graph = load_network_topology(args.dataset, args.datapath)
 
     te_step = x_gt.shape[0]
     print('    Method           |   Min     Avg    Max     std')
 
     if args.run_te == 'gwn_ls2sr':
+        graph = load_network_topology(args.dataset, args.datapath)
         gwn_ls2sr(yhat, y_gt, graph, te_step, args)
     elif args.run_te == 'gwn_cfr_topk':  # (critical flows rerouting)
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         gwn_cfr_topk(yhat, y_gt, graph, segments, te_step, args)
     elif args.run_te == 'gwn_srls':
@@ -1132,41 +1184,56 @@ def run_te(x_gt, y_gt, yhat, args):
         graphs = createGraph_srls(os.path.join(args.datapath, 'topo/{}_node.csv'.format(args.dataset)),
                                   os.path.join(args.datapath, 'topo/{}_edge.csv'.format(args.dataset)))
         gt_srls(y_gt, graphs, te_step, args)
+    elif args.run_te == 'vae_gen_data':
+        graphs = createGraph_srls(os.path.join(args.datapath, 'topo/{}_node.csv'.format(args.dataset)),
+                                  os.path.join(args.datapath, 'topo/{}_edge.csv'.format(args.dataset)))
+        vae_gen_data(x_gt, y_gt, graphs, te_step, args)
     elif args.run_te == 'srls_p0':
         graphs = createGraph_srls(os.path.join(args.datapath, 'topo/{}_node.csv'.format(args.dataset)),
                                   os.path.join(args.datapath, 'topo/{}_edge.csv'.format(args.dataset)))
         srls_p0(y_gt, graphs, te_step, args)
     elif args.run_te == 'gt_ls2sr':
+        graph = load_network_topology(args.dataset, args.datapath)
         gt_ls2sr(y_gt, graph, te_step, args)
     elif args.run_te == 'p0':
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p0_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p1':
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p1_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p2':  # (or gt_p2)
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p2_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'gwn_p2':
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         gwn_p2(yhat, y_gt, graph, segments, te_step, args)
     elif args.run_te == 'p3':
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         optimal_p3_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'onestep':
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         one_step_predicted_solver(yhat, y_gt, graph, segments, te_step, args)
     # elif args.run_te == 'prophet':
     #     prophet_predicted_solver(x_gt, y_gt, graph, te_step, args)
     elif args.run_te == 'laststep':
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         last_step_solver(y_gt, x_gt, graph, segments, args)
     elif args.run_te == 'laststep_ls2sr':
+        graph = load_network_topology(args.dataset, args.datapath)
         last_step_ls2sr(y_gt, x_gt, graph, te_step, args)
     elif args.run_te == 'firststep':
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         first_step_solver(y_gt, graph, segments, te_step, args)
     elif args.run_te == 'or':
+        graph = load_network_topology(args.dataset, args.datapath)
         segments = compute_path(graph, args.dataset, args.datapath)
         oblivious_routing_solver(y_gt, graph, segments, te_step, args)
     else:

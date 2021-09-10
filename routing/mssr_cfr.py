@@ -95,7 +95,7 @@ class MSSRCFR_Solver:
     def extract_status(self, problem):
         self.status = pl.LpStatus[problem.status]
 
-    def init_solution(self):
+    def initialize(self):
         solution = np.zeros([self.num_node, self.num_node, self.num_node])
         for i, j in itertools.product(range(self.num_node), range(self.num_node)):
             solution[i, j, i] = 1

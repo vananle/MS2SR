@@ -60,11 +60,11 @@ class OneStepSRSolver:
             index = util.flatten_index(i, j, k, self.num_node)
             self.solution[i, j, k] = self.var_dict['x_{}'.format(index)]
 
-    def evaluate(self, tm):
+    def evaluate(self, tm, solution):
         # extract utilization
         mlu = 0
         for u, v in self.G.edges:
-            load = sum([self.solution[i, j, k] * tm[i, j] * util.g(self.segments, i, j, k, u, v) for i, j, k in
+            load = sum([solution[i, j, k] * tm[i, j] * util.g(self.segments, i, j, k, u, v) for i, j, k in
                         itertools.product(range(self.num_node), range(self.num_node), range(self.num_node))])
             capacity = self.G.get_edge_data(u, v)['capacity']
             utilization = load / capacity
@@ -77,13 +77,15 @@ class OneStepSRSolver:
         self.status = pl.LpStatus[problem.status]
 
     def init_solution(self):
-        self.solution = np.zeros([self.num_node, self.num_node, self.num_node])
+        solution = np.zeros([self.num_node, self.num_node, self.num_node])
         for i, j in itertools.product(range(self.num_node), range(self.num_node)):
-            self.solution[i, j, i] = 1
+            solution[i, j, i] = 1
+
+        return solution
 
     def solve(self, tm):
         problem, x = self.create_problem(tm)
-        self.init_solution()
+        self.solution = self.init_solution()
         problem.solve()
         self.problem = problem
         self.extract_status(problem)
