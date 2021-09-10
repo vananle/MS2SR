@@ -507,7 +507,7 @@ def vae_gen_data(x_gt, y_gt, graphs, te_step, args):
     As = np.stack(As, axis=0)
     TMs = np.stack(TMs, axis=0)
 
-    if te_step < 100:
+    if te_step < 1000:
         set = 'val'
     else:
         set = 'train'
