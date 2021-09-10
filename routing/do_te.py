@@ -471,6 +471,7 @@ def gt_srls(y_gt, graphs, te_step, args):
 
 def vae_gen_data(x_gt, y_gt, graphs, te_step, args):
     print('------->>> SRLS_VAE <<<-------')
+    print('Dataset: {} - seq_len: {}'.format(args.dataset, args.seq_len_x))
     G, nNodes, nEdges, capacity, sp = graphs
 
     solver = SRLS(sp, capacity, nNodes, nEdges, args.timeout)
