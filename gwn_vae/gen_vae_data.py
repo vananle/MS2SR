@@ -48,8 +48,8 @@ def main(args, **model_kwargs):
     args.val_batch_size = 64
     args.device = 'cuda:0'
 
-    # sets = ['train', 'val']
-    sets = ['val']
+    sets = ['train', 'val']
+    # sets = ['val']
     datasets = ['abilene_tm', 'geant_tm', 'renater_tm']
     seqLen = [6, 12, 18, 24, 30]
     for dataset in datasets:
