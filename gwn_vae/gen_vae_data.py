@@ -82,6 +82,7 @@ def main(args, **model_kwargs):
         utils.print_args(args)
 
         # Metrics on test data
+        args.set = set
 
         if set == 'train':
             data_loader = train_loader

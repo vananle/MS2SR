@@ -507,15 +507,10 @@ def vae_gen_data(x_gt, y_gt, graphs, te_step, args):
     As = np.stack(As, axis=0)
     TMs = np.stack(TMs, axis=0)
 
-    if te_step < 1000:
-        set = 'val'
-    else:
-        set = 'train'
-
-    np.save(os.path.join(args.log_dir, '{}_LL'.format(set)), LL)
-    np.save(os.path.join(args.log_dir, '{}_LM'.format(set)), LM)
-    np.save(os.path.join(args.log_dir, '{}_A'.format(set)), As)
-    np.save(os.path.join(args.log_dir, '{}_TM'.format(set)), TMs)
+    np.save(os.path.join(args.log_dir, '{}_LL'.format(args.set)), LL)
+    np.save(os.path.join(args.log_dir, '{}_LM'.format(args.set)), LM)
+    np.save(os.path.join(args.log_dir, '{}_A'.format(args.set)), As)
+    np.save(os.path.join(args.log_dir, '{}_TM'.format(args.set)), TMs)
     print('LL shape: ', LL.shape)
     print('LM shape: ', LM.shape)
     print('As shape: ', As.shape)

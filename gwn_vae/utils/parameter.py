@@ -12,9 +12,7 @@ def get_args():
     parser.add_argument('--dataset', type=str, default='abilene_tm',
                         choices=['abilene_tm', 'geant_tm', 'brain_tm', 'renater_tm', 'surfnet_tm', 'uninett_tm'],
                         help='Dataset, (default abilene_tm)')
-    parser.add_argument('--testset', type=int, default=0,
-                        choices=[0, 1, 2, 3, 4],
-                        help='Test set, (default 0)')
+    parser.add_argument('--set', type=str, default='train')
     parser.add_argument('--datapath', type=str, default='../../data_mssr/')
     parser.add_argument('--type', type=str, default='p2', choices=['p1', 'p2', 'p3'],
                         help='problem formulation (default p2)')

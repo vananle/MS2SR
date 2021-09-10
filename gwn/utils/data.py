@@ -3,7 +3,7 @@ import pickle
 
 import numpy as np
 import torch
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -281,6 +281,9 @@ def get_dataloader(args):
     if not os.path.exists(saved_train_path) \
             or not os.path.exists(saved_val_path) or not os.path.exists(saved_test_path):
         train, val, test = train_test_split(X, args.dataset)
+        data_path = os.path.join(args.datapath, 'data/{}_split.mat'.format(args.dataset))
+        savemat(data_path, )
+
         trainset = data_preprocessing(data=train, args=args, gen_times=10, scaler=None)
         train_scaler = trainset['Scaler']
         with open(saved_train_path, 'wb') as fp:
