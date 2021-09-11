@@ -122,17 +122,12 @@ class TrafficDataset(Dataset):
         return indices
 
 
-def load_matlab_matrix(path, variable_name):
-    X = loadmat(path)[variable_name]
-    return X
-
-
 def load_raw(args):
     # load ground truth
     path = args.datapath
 
     data_path = os.path.join(path, 'data/{}.mat'.format(args.dataset))
-    X = load_matlab_matrix(data_path, 'X')
+    X = loadmat(data_path)['X']
     if len(X.shape) > 2:
         X = np.reshape(X, newshape=(X.shape[0], -1))
 

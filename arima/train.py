@@ -17,16 +17,26 @@ import utils
 def main(args, **model_kwargs):
     device = torch.device(args.device)
     args.device = device
-    if args.dataset == 'abilene_tm':
+    if 'abilene' in args.dataset:
         args.nNodes = 12
         args.day_size = 288
-    elif args.dataset == 'geant_tm':
+    elif 'geant' in args.dataset:
         args.nNodes = 22
         args.day_size = 96
-    elif args.dataset == 'brain_tm':
+    elif 'brain' in args.dataset:
         args.nNodes = 9
+        args.day_size = 1440
     elif 'sinet' in args.dataset:
-        args.nNodes = 73
+        args.nNodes = 74
+        args.day_size = 288
+    elif 'renater' in args.dataset:
+        args.nNodes = 30
+        args.day_size = 288
+    elif 'surfnet' in args.dataset:
+        args.nNodes = 50
+        args.day_size = 288
+    elif 'uninett' in args.dataset:
+        args.nNodes = 74
         args.day_size = 288
     else:
         raise ValueError('Dataset not found!')

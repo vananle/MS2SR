@@ -10,9 +10,10 @@ def get_args():
     # parameter for dataset
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--dataset', type=str, default='abilene_tm',
-                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'sinet_sys_tm'])
-    parser.add_argument('--datapath', type=str, default='../../data')
-    parser.add_argument('--type', type=str, default='p1', choices=['p1', 'p2', 'p3'])
+                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'renater_tm', 'surfnet_tm', 'uninett_tm'],
+                        help='Dataset, (default abilene_tm)')
+    parser.add_argument('--datapath', type=str, default='../../data_mssr/')
+    parser.add_argument('--type', type=str, default='p2', choices=['p1', 'p2', 'p3'])
 
     parser.add_argument('--use_scaler', action='store_true')
 
@@ -21,7 +22,7 @@ def get_args():
     # Wavenet
     parser.add_argument('--seq_len_x', type=int, default=216, help='')
     parser.add_argument('--dl_seq_len_x', type=int, default=12, help='')
-    parser.add_argument('--seq_len_y', type=int, default=6, help='')
+    parser.add_argument('--seq_len_y', type=int, default=12, help='')
 
     parser.add_argument('--blocks', type=int, default=5, help='')
     parser.add_argument('--layers', type=int, default=2, help='')
@@ -40,19 +41,19 @@ def get_args():
     parser.add_argument('--plot', action='store_true')
 
     # parameter for test_routing
-    parser.add_argument('--run_te', action='store_true')
+    parser.add_argument('--ncf', default=10, type=int, help='default 10')
+    parser.add_argument('--run_te', type=str, choices=['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2',
+                                                       'p3', 'onestep', 'prophet', 'laststep', 'laststep_ls2sr',
+                                                       'firststep', 'or', 'gwn_srls', 'gt_srls', 'srls_p0',
+                                                       'gwn_cfr_topk'],
+                        default='None')
 
-    parser.add_argument('--test_routing', type=str, default='sr',
-                        choices=['sr', 'sp', 'or', 'ta'])
-    parser.add_argument('--mon_policy', type=str, default='random',
-                        choices=['heavy_hitter', 'fluctuation', 'fgg', 'random'])
+    parser.add_argument('--timeout', type=float, default=1.0)
     parser.add_argument('--te_step', type=int, default=0)
+    parser.add_argument('--nrun', type=int, default=3)
 
     # get args
     args = parser.parse_args()
-
-    if args.seq_len_x <= 45:
-        args.blocks = 3
 
     if args.type == 'p1':
         args.out_seq_len = args.seq_len_y

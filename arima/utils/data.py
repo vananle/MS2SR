@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
 
-class MinMaxScaler_torch():
+class MinMaxScaler_torch:
 
     def __init__(self, min=None, max=None, device='cuda:0'):
         self.min = min
@@ -26,7 +26,7 @@ class MinMaxScaler_torch():
         return (data * (self.max - self.min + 1e-8)) + self.min
 
 
-class StandardScaler_torch():
+class StandardScaler_torch:
 
     def __init__(self):
         self.means = 0
@@ -226,50 +226,82 @@ class ArimaDatasetP2(Dataset):
         return indices
 
 
-def load_matlab_matrix(path, variable_name):
-    X = loadmat(path)[variable_name]
-    return X
-
-
 def load_raw(args):
     # load ground truth
     path = args.datapath
 
     data_path = os.path.join(path, 'data/{}.mat'.format(args.dataset))
-    X = load_matlab_matrix(data_path, 'X')
+    X = loadmat(data_path)['X']
     if len(X.shape) > 2:
         X = np.reshape(X, newshape=(X.shape[0], -1))
 
     return X
 
 
-def train_test_split(X, seq_len_x, dl_seq_len_x):
-    train_size = int(X.shape[0] * 0.7)
-    val_size = int(X.shape[0] * 0.1)
+def remove_outliers(data):
+    q25, q75 = np.percentile(data, 25, axis=0), np.percentile(data, 75, axis=0)
+    iqr = q75 - q25
+    cut_off = iqr * 3
+    lower, upper = q25 - cut_off, q75 + cut_off
+    for i in range(data.shape[1]):
+        flow = data[:, i]
+        flow[flow > upper[i]] = upper[i]
+        # flow[flow < lower[i]] = lower[i]
+        data[:, i] = flow
 
-    padding = seq_len_x - dl_seq_len_x
+    return data
 
-    X_test = X[val_size + train_size - padding:]  # add more historical data to test set
-    # as arima use more historial steps than DL models. The actual test sets of both approaches are the same.
 
-    return X_test
+def train_test_split(X, dataset):
+    if 'abilene' in dataset:
+        train_size = 3 * 7 * 288  # 3 weeks
+        val_size = 288 * 7  # 1 week
+        test_size = 288 * 7 * 2  # 2 weeks
+
+    elif 'geant' in dataset:
+        train_size = 96 * 7 * 4 * 2  # 2 months
+        val_size = 96 * 7 * 2  # 2 weeks
+        test_size = 96 * 7 * 4  # 1 month
+
+    elif 'brain' in dataset:
+        train_size = 1440 * 3  # 3 days
+        val_size = 1440  # 1 day
+        test_size = 1440 * 2  # 2 days
+    elif 'uninett' in dataset:  # granularity: 1 hour
+        train_size = 4 * 7 * 288  # 4 weeks
+        val_size = 288 * 7  # 1 week
+        test_size = 288 * 7 * 2  # 2 weeks
+    elif 'renater_tm' in dataset:  # granularity: 5 min
+        train_size = 4 * 7 * 288  # 4 weeks
+        val_size = 288 * 7  # 1 week
+        test_size = 288 * 7 * 2  # 2 weeks
+    else:
+        raise NotImplementedError
+
+    X_train = X[:train_size]
+
+    X_val = X[train_size:val_size + train_size]
+
+    X_test = X[val_size + train_size: val_size + train_size + test_size]
+
+    if 'abilene' in dataset or 'geant' in dataset or 'brain' in dataset:
+        X_train = remove_outliers(X_train)
+        X_val = remove_outliers(X_val)
+
+    return X_train, X_val, X_test
 
 
 def get_dataloader(args):
     # loading data
     X = load_raw(args)
+    total_timesteps, total_series = X.shape
 
-    if X.shape[0] > 10000:
-        _size = 10000
-    else:
-        _size = X.shape[0]
-
-    X = X[:_size]
+    train, val, test = train_test_split(X, args.dataset)
 
     if args.type == 'p1':
-        test_set = ArimaDatasetP1(X, args=args)
+        test_set = ArimaDatasetP1(test, args=args)
     elif args.type == 'p2':
-        test_set = ArimaDatasetP2(X, args=args)
+        test_set = ArimaDatasetP2(test, args=args)
     else:
         raise NotImplementedError('Dataset for {} is not implemented!'.format(args.type))
 
