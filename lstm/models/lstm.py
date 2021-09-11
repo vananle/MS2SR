@@ -24,7 +24,7 @@ class BiLSTM_max(torch.nn.Module):
 
     def forward(self, input_tensor):
         # input x (b, seq_x, n, features)
-
+        print('input_tensor: ', input_tensor.size())
         b, n, s, f = input_tensor.size()
         x = input_tensor.transpose(1, 2)
         # x = x.reshape(b * n, s, f)  # (bn, seq_x, f)
