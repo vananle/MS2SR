@@ -39,7 +39,7 @@ class BiLSTM_max(torch.nn.Module):
             out = out.reshape(b, self.out_dim, 1)  # (b, 1, n)
             print('out shape: ', out.size())
             x_out.append(out)
-
+        print('xout: ', x_out.size())
         x_out = torch.stack(x_out, dim=2)
         print('xout: ', x_out.size())
         return x_out
