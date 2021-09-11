@@ -10,10 +10,10 @@ def get_args():
     # parameter for dataset
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--dataset', type=str, default='abilene_tm',
-                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'sinet_sys_tm'])
-    parser.add_argument('--datapath', type=str, default='../../data')
+                        choices=['abilene_tm', 'geant_tm', 'brain_tm', 'renater_tm', 'surfnet_tm', 'uninett_tm'],
+                        help='Dataset, (default abilene_tm)')
+    parser.add_argument('--datapath', type=str, default='../../data_mssr/')
     parser.add_argument('--type', type=str, default='p2', choices=['p2'])
-    parser.add_argument('--trunk', type=int, default=3)
 
     parser.add_argument('--tod', action='store_true')
     parser.add_argument('--ma', action='store_true')
@@ -22,8 +22,10 @@ def get_args():
     # Model
     # Graph
     parser.add_argument('--model', type=str, default='lstm')
-    parser.add_argument('--seq_len_x', type=int, default=64, help='')
-    parser.add_argument('--seq_len_y', type=int, default=12, help='')
+    parser.add_argument('--seq_len_x', type=int, default=36, choices=[6, 12, 18, 24, 30, 36, 48],
+                        help='input length default 64')
+    parser.add_argument('--seq_len_y', type=int, default=36, choices=[6, 12, 18, 24, 30, 36, 48],
+                        help='routing cycle 12')
 
     parser.add_argument('--layers', type=int, default=2, help='')
     parser.add_argument('--in_dim', type=int, default=1, help='')
@@ -36,12 +38,12 @@ def get_args():
     parser.add_argument('--lamda', type=float, default=2.0)
 
     # training
-    parser.add_argument('--train_batch_size', type=int, default=4)
-    parser.add_argument('--val_batch_size', type=int, default=4)
+    parser.add_argument('--train_batch_size', type=int, default=256)
+    parser.add_argument('--val_batch_size', type=int, default=256)
     parser.add_argument('--test_batch_size', type=int, default=1)
     parser.add_argument('--device', type=str, default='cuda:0')
 
-    parser.add_argument('--epochs', type=int, default=100, help='')
+    parser.add_argument('--epochs', type=int, default=300, help='')
     parser.add_argument('--clip', type=int, default=3, help='Gradient Clipping')
     parser.add_argument('--weight_decay', type=float, default=0.0001, help='weight decay rate')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate')
@@ -52,13 +54,16 @@ def get_args():
     parser.add_argument('--plot', action='store_true')
 
     # parameter for test_routing
-    parser.add_argument('--run_te', action='store_true')
+    parser.add_argument('--ncf', default=10, type=int, help='default 10')
+    parser.add_argument('--run_te', type=str, choices=['None', 'gwn_ls2sr', 'gt_ls2sr', 'p0', 'p1', 'p2', 'gwn_p2',
+                                                       'p3', 'onestep', 'prophet', 'laststep', 'laststep_ls2sr',
+                                                       'firststep', 'or', 'gwn_srls', 'gt_srls', 'srls_p0',
+                                                       'gwn_cfr_topk'],
+                        default='None')
 
-    parser.add_argument('--test_routing', type=str, default='sr',
-                        choices=['sr', 'sp', 'or', 'ta'])
-    parser.add_argument('--mon_policy', type=str, default='random',
-                        choices=['heavy_hitter', 'fluctuation', 'fgg', 'random'])
+    parser.add_argument('--timeout', type=float, default=1.0)
     parser.add_argument('--te_step', type=int, default=0)
+    parser.add_argument('--nrun', type=int, default=3)
 
     # get args
     args = parser.parse_args()
@@ -101,9 +106,6 @@ def print_args(args):
     print('    - seq_len_x              :', args.seq_len_x)
     print('    - seq_len_y              :', args.seq_len_y)
     print('    - out_seq_len            :', args.out_seq_len)
-    print('    - tod                    :', args.tod)
-    print('    - ma                     :', args.ma)
-    print('    - mx                     :', args.mx)
     print('---------------------------------------------------------')
     print('    - device                 :', args.device)
     print('    - train_batch_size       :', args.train_batch_size)
@@ -115,7 +117,6 @@ def print_args(args):
     print('    - plot_results           :', args.plot)
     print('---------------------------------------------------------')
     print('    - run te                 :', args.run_te)
-    # print('    - routing        :', args.routing)
-    # print('    - mon_policy     :', args.mon_policy)
     print('    - te_step                :', args.te_step)
+    print('    - ncf                    :', args.ncf)
     print('---------------------------------------------------------')

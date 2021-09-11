@@ -20,6 +20,7 @@ class BiLSTM_max(torch.nn.Module):
 
         self.linear_1 = torch.nn.Linear(in_features=self.lstm_hidden * 2, out_features=self.lstm_hidden, bias=True)
         self.linear_2 = torch.nn.Linear(in_features=self.lstm_hidden, out_features=self.out_dim, bias=True)
+        self.verbose = args.verbose
 
     def forward(self, input_tensor):
         # input x (b, seq_x, n, features)
@@ -27,13 +28,18 @@ class BiLSTM_max(torch.nn.Module):
         b, s, n, f = input_tensor.size()
 
         x = input_tensor.transpose(1, 2)
-        x = x.reshape(b * n, s, f)  # (bn, seq_x, f)
+        # x = x.reshape(b * n, s, f)  # (bn, seq_x, f)
+        print('input shape:, ', x.size())
+        x_out = []
+        for i in range(n):
+            x_in = x[:, :, i, :]
+            out, _ = self.bilstm(x_in)  # (b, seq_x, hidden*2)
+            out = self.linear_1(out[:, -1, :])  # (b, 1, n)
+            out = torch.nn.functional.dropout(out, 0.2, training=self.training)
+            out = self.linear_2(out)  # (bn, 1, 1)
+            out = out.reshape(b, self.out_dim, 1)  # (b, 1, n)
+            print('out shape: ', out.size())
+            x_out.append(out)
 
-        x, _ = self.bilstm(x)  # (bn, seq_x, hidden*2)
-
-        x = self.linear_1(x[:, -1, :])  # (bn, 1, n)
-        x = torch.nn.functional.dropout(x, 0.2, training=self.training)
-        x = self.linear_2(x)  # (bn, 1, 1)
-        x = x.reshape(b, self.out_dim, n)  # (b, 1, n)
-
-        return x
+        x_out = torch.stack(x_out, dim=2)
+        return x_out
