@@ -25,12 +25,12 @@ class BiLSTM_max(torch.nn.Module):
     def forward(self, input_tensor):
         # input x (b, seq_x, n, features)
         print('input_tensor: ', input_tensor.size())
-        b, n, s, f = input_tensor.size()
-        x = input_tensor.transpose(1, 2)
+        b, s, n, f = input_tensor.size()
+        # x = input_tensor.transpose(1, 2)
         # x = x.reshape(b * n, s, f)  # (bn, seq_x, f)
         x_out = []
         for i in range(n):
-            x_in = x[:, :, i, :]
+            x_in = input_tensor[:, :, i, :]
             out, _ = self.bilstm(x_in)  # (b, seq_x, hidden*2)
             out = self.linear_1(out[:, -1, :])  # (b, 1, n)
             out = torch.nn.functional.dropout(out, 0.2, training=self.training)
@@ -39,4 +39,6 @@ class BiLSTM_max(torch.nn.Module):
             x_out.append(out)
         x_out = torch.stack(x_out, dim=2)
         x_out = x_out.squeeze(dim=-1)
+        print('x_out: ', x_out.size())
+
         return x_out
