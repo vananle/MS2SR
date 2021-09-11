@@ -68,6 +68,8 @@ def get_args():
     # get args
     args = parser.parse_args()
 
+    args.seq_len_y = args.seq_len_x
+
     if args.type == 'p1':
         args.out_seq_len = args.seq_len_y
     elif args.type == 'p2':
