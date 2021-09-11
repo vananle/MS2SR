@@ -41,4 +41,5 @@ class BiLSTM_max(torch.nn.Module):
             x_out.append(out)
 
         x_out = torch.stack(x_out, dim=2)
+        print('xout: ', x_out.size())
         return x_out
