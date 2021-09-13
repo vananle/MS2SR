@@ -244,9 +244,10 @@ def gwn_ls2sr(yhat, y_gt, graph, te_step, args):
         mlu, solution = extract_results(results)
         route_changes = get_route_changes_heuristic(solution)
 
-        print('Route changes: Avg {:.3f} std {:.3f}'.format(np.sum(route_changes) /
-                                                            (args.seq_len_y * route_changes.shape[0]),
-                                                            np.std(route_changes)))
+        print('Route changes: Total: {}  - Avg {:.3f} std {:.3f}'.format(np.sum(route_changes),
+                                                                         np.sum(route_changes) /
+                                                                         (args.seq_len_y * route_changes.shape[0]),
+                                                                         np.std(route_changes)))
         print('gwn ls2sr    {}      | {:.3f}   {:.3f}   {:.3f}   {:.3f}'.format(args.model,
                                                                                 np.min(mlu),
                                                                                 np.mean(mlu),
