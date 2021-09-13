@@ -266,7 +266,7 @@ def gwn_cfr_topk(yhat, y_gt, graph, segments, te_step, args):
     results = []
     solver = MSSRCFR_Solver(G=graph, segments=segments)
 
-    solution = solver.init_solution()
+    solution = solver.initialize()
     dynamicity = np.zeros(shape=(te_step, 7))
     for i in tqdm(range(te_step)):
         mean = np.mean(y_gt[i], axis=1)

@@ -21,7 +21,7 @@ class MSSRCFR_Solver:
         self.problem = None
         self.var_dict = None
         self.solution = None
-        self.solution = self.init_solution()
+        self.solution = self.initialize()
         self.status = None
 
     def create_problem(self, tm, flow_idx, rCapa):
