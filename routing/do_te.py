@@ -1146,8 +1146,10 @@ def p0(solver, gt_tms):
             solver.solve(gt_tms[i])
         except:
             pass
-        solutions.append(solver.solution)
-        u.append(solver.evaluate(gt_tms[i]))
+
+        solution = solver.solution
+        solutions.append(solution)
+        u.append(solver.evaluate(gt_tms[i], solution))
 
     solutions = np.stack(solutions, axis=0)
     return u, solutions
