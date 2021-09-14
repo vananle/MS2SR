@@ -772,7 +772,7 @@ def optimal_p0_solver(y_gt, G, segments, te_step, args):
     congested = mlu[mlu >= 1.0].size
     print('Congestion_rate: {}/{}'.format(congested, mlu.size))
 
-    save_results(args.log_dir, 'p0_optimal', mlu, rc)
+    save_results(args.log_dir, 'p0', mlu, rc)
 
 
 def optimal_p1_solver(y_gt, G, segments, te_step, args):
