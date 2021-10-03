@@ -29,7 +29,7 @@ def display_stats(stats):
 class Logger:
 
     def __init__(self, args):
-        log_dir = '../../logs/prediction/{}_{}_{}_{}_{}'.format(args.model, args.dataset, args.seq_len_x,
+        log_dir = '../../logs/arima/{}_{}_{}_{}_{}'.format(args.model, args.dataset, args.seq_len_x,
                                                                 args.seq_len_y, args.type)
 
         if not os.path.exists(log_dir):

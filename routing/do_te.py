@@ -96,7 +96,7 @@ def oblivious_routing_solver(y_gt, G, segments, te_step, args):
     congested = mlu[mlu >= 1.0].size
     print('Congestion_rate: {}/{}'.format(congested, mlu.size))
 
-    save_results(args.log_dir, 'oblivious', mlu, rc)
+    save_results(args.log_dir, 'or', mlu, rc)
 
 
 def last_step_solver(y_gt, x_gt, graph, segments, args):

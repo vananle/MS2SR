@@ -262,7 +262,6 @@ def train_test_split(X, dataset):
         train_size = 96 * 7 * 4 * 2  # 2 months
         val_size = 96 * 7 * 2  # 2 weeks
         test_size = 96 * 7 * 4  # 1 month
-
     elif 'brain' in dataset:
         train_size = 1440 * 3  # 3 days
         val_size = 1440  # 1 day
