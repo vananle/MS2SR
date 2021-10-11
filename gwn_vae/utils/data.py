@@ -1,6 +1,6 @@
 import os
-import pickle
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from scipy.io import loadmat
@@ -122,17 +122,10 @@ class TrafficDataset(Dataset):
         return indices
 
 
-def load_matlab_matrix(path, variable_name):
-    X = loadmat(path)[variable_name]
-    return X
-
-
 def load_raw(args):
     # load ground truth
-    path = args.datapath
-
-    data_path = os.path.join(path, 'data/{}.mat'.format(args.dataset))
-    X = load_matlab_matrix(data_path, 'X')
+    data_path = os.path.join(args.datapath, 'data/{}.mat'.format(args.dataset))
+    X = loadmat(data_path)['X']
     if len(X.shape) > 2:
         X = np.reshape(X, newshape=(X.shape[0], -1))
 
@@ -265,6 +258,25 @@ def train_test_split(X, dataset):
     return X_train, X_val, X_test
 
 
+def plot_dataset(data, path, fname):
+    fig, axes = plt.subplots(1, 1, sharex=True, figsize=(40, 5), tight_layout=True)
+    # data = np.reshape(data, newshape=(-1, data.shape[-1]))
+    data = np.mean(data, axis=1)
+    means = np.mean(data, axis=0)
+    topk = np.argsort(means)[::-1]
+
+    y = data[:, topk[0]]
+    x = np.arange(y.shape[0])
+    plt.plot(x, y)
+
+    save_fig_path = os.path.join(path + 'plotted_data')
+    if not os.path.exists(save_fig_path):
+        os.makedirs(save_fig_path)
+    plt.savefig(os.path.join(save_fig_path, '{}.eps'.format(fname)))
+    plt.savefig(os.path.join(save_fig_path, '{}.png'.format(fname)))
+    plt.cla()
+
+
 def get_dataloader(args):
     # loading data
     X = load_raw(args)
@@ -274,46 +286,15 @@ def get_dataloader(args):
     if not os.path.exists(stored_path):
         os.makedirs(stored_path)
 
-    saved_train_path = os.path.join(stored_path, 'train.pkl')
-    saved_val_path = os.path.join(stored_path, 'val.pkl')
-    saved_test_path = os.path.join(stored_path, 'test.pkl')
+    train, val, test = train_test_split(X, args.dataset)
+    trainset = data_preprocessing(data=train, args=args, gen_times=1, scaler=None)
+    train_scaler = trainset['Scaler']
 
-    if not os.path.exists(saved_train_path) \
-            or not os.path.exists(saved_val_path) or not os.path.exists(saved_test_path):
-        train, val, test = train_test_split(X, args.dataset)
-        trainset = data_preprocessing(data=train, args=args, gen_times=10, scaler=None)
-        train_scaler = trainset['Scaler']
-        with open(saved_train_path, 'wb') as fp:
-            pickle.dump(trainset, fp, protocol=pickle.HIGHEST_PROTOCOL)
-            fp.close()
+    print('Data preprocessing: VALSET')
+    valset = data_preprocessing(data=val, args=args, gen_times=1, scaler=train_scaler)
 
-        print('Data preprocessing: VALSET')
-        valset = data_preprocessing(data=val, args=args, gen_times=10, scaler=train_scaler)
-        with open(saved_val_path, 'wb') as fp:
-            pickle.dump(valset, fp, protocol=pickle.HIGHEST_PROTOCOL)
-            fp.close()
-
-        print('Data preprocessing: TESTSET')
-        testset = data_preprocessing(data=test, args=args, gen_times=1, scaler=train_scaler)
-
-        with open(saved_test_path, 'wb') as fp:
-            pickle.dump(testset, fp, protocol=pickle.HIGHEST_PROTOCOL)
-            fp.close()
-    else:
-        print('Load saved dataset from {}'.format(stored_path))
-        if args.test:
-            trainset, valset = None, None
-        else:
-            with open(saved_train_path, 'rb') as fp:
-                trainset = pickle.load(fp)
-                fp.close()
-            with open(saved_val_path, 'rb') as fp:
-                valset = pickle.load(fp)
-                fp.close()
-
-        with open(saved_test_path, 'rb') as fp:
-            testset = pickle.load(fp)
-            fp.close()
+    print('Data preprocessing: TESTSET')
+    testset = data_preprocessing(data=test, args=args, gen_times=1, scaler=train_scaler)
 
     if args.test:  # Only load testing set
         train_loader = None
@@ -337,3 +318,15 @@ def get_dataloader(args):
                              shuffle=False)
 
     return train_loader, val_loader, test_loader, total_timesteps, total_series
+
+
+if __name__ == '__main__':
+    data_path = '/home/anle/logs/im2021_gwn_vae/gwn_abilene_tm.1_12_12_mae_p2/'
+    # linkload = np.load(data_path + 'train_LL_np.npy')
+    # plot_dataset(linkload, data_path, 'train')
+    # linkload = np.load(data_path + 'val_LL_np.npy')
+    # plot_dataset(linkload, data_path, 'val')
+    tm = np.load(data_path + 'train_TM_np.npy')
+    plot_dataset(tm, data_path, 'train_TM')
+    tm = np.load(data_path + 'val_TM_np.npy')
+    plot_dataset(tm, data_path, 'val_TM')

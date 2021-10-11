@@ -470,7 +470,7 @@ def gt_srls(y_gt, graphs, te_step, args):
         # np.save(os.path.join(args.log_dir, 'TMs_gwn_srls'), TMs)
 
 
-def vae_gen_data(x_gt, y_gt, graphs, te_step, args):
+def vae_gen_data(x_gt, y_gt, graphs, te_step, args, fname):
     print('------->>> SRLS_VAE <<<-------')
     print('Dataset: {} - seq_len: {}'.format(args.dataset, args.seq_len_x))
     G, nNodes, nEdges, capacity, sp = graphs
@@ -498,9 +498,11 @@ def vae_gen_data(x_gt, y_gt, graphs, te_step, args):
         l = solver.getLinkload(routingSolution=A, trafficMatrix=tm)
         L = np.squeeze(l, axis=-1)
 
+        routingMX = solver.getRoutingMatrix(routingSolution=A)
+
         LL.append(L0)
         LM.append(L)
-        As.append(A)
+        As.append(routingMX)
         TMs.append(T)
 
     LL = np.stack(LL, axis=0)
@@ -508,12 +510,54 @@ def vae_gen_data(x_gt, y_gt, graphs, te_step, args):
     As = np.stack(As, axis=0)
     TMs = np.stack(TMs, axis=0)
 
-    np.save(os.path.join(args.log_dir, '{}_LL'.format(args.set)), LL)
-    np.save(os.path.join(args.log_dir, '{}_LM'.format(args.set)), LM)
-    np.save(os.path.join(args.log_dir, '{}_A'.format(args.set)), As)
-    np.save(os.path.join(args.log_dir, '{}_TM'.format(args.set)), TMs)
+    np.save(os.path.join(args.log_dir, '{}_LL'.format(fname)), LL)
+    np.save(os.path.join(args.log_dir, '{}_LM'.format(fname)), LM)
+    np.save(os.path.join(args.log_dir, '{}_A'.format(fname)), As)
+    np.save(os.path.join(args.log_dir, '{}_TM'.format(fname)), TMs)
     print('LL shape: ', LL.shape)
     print('LM shape: ', LM.shape)
+    print('As shape: ', As.shape)
+    print('TMs shape: ', TMs.shape)
+
+
+def vae_no_pred_gen_data(x_gt, y_gt, graphs, te_step, args, fname):
+    print('------->>> SRLS_VAE <<<-------')
+    print('Dataset: {} - seq_len: {}'.format(args.dataset, args.seq_len_x))
+    G, nNodes, nEdges, capacity, sp = graphs
+
+    solver = SRLS(sp, capacity, nNodes, nEdges, args.timeout)
+    LL, LM, As, TMs = [], [], [], []
+    x_gt[x_gt < 10e-6] = 10e-5
+    y_gt[y_gt < 10e-6] = 10e-5
+    for i in tqdm(range(te_step)):
+
+        T0 = np.max(x_gt[i], axis=0)
+        solver.modifierTrafficMatrix(np.reshape(T0, newshape=(nNodes, nNodes)))
+        solver.solve()
+        A = solver.extractRoutingPath()
+
+        L0 = np.zeros(shape=(x_gt[i].shape[0], nEdges))
+        A0 = []
+        for j in range(x_gt[i].shape[0]):
+            tm = x_gt[i, j]
+            tm = np.reshape(tm, newshape=(nNodes, nNodes))
+            l = solver.getLinkload(routingSolution=A, trafficMatrix=tm)
+            l = np.squeeze(l, axis=-1)
+            L0[j] = l
+            A0.append(solver.getRoutingMatrix(routingSolution=A))
+
+        LL.append(L0)
+        As.append(A0)
+        TMs.append(x_gt[i])
+
+    LL = np.stack(LL, axis=0)
+    As = np.stack(As, axis=0)
+    TMs = np.stack(TMs, axis=0)
+
+    np.save(os.path.join(args.log_dir, '{}_LL_np'.format(fname)), LL)
+    np.save(os.path.join(args.log_dir, '{}_A_np'.format(fname)), As)
+    np.save(os.path.join(args.log_dir, '{}_TM_np'.format(fname)), TMs)
+    print('LL shape: ', LL.shape)
     print('As shape: ', As.shape)
     print('TMs shape: ', TMs.shape)
 
