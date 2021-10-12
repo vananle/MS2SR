@@ -141,7 +141,7 @@ def np2torch(X, device):
     return X
 
 
-def data_preprocessing(data, args, gen_times=5, scaler=None):
+def data_preprocessing(data, args, gen_times=5, scaler=None, is_train=False):
     n_timesteps, n_series = data.shape
 
     # original dataset with granularity k = 1
@@ -179,7 +179,7 @@ def data_preprocessing(data, args, gen_times=5, scaler=None):
             # Data for doing traffic engineering
             x_gt = oX[t * args.k:(t + len_x) * args.k]
             y_gt = oX[(t + len_x) * args.k: (t + len_x + len_y) * args.k]
-            if torch.max(x_gt) <= 1.0 or torch.max(y_gt) <= 1.0:
+            if (torch.max(x_gt) <= 1.0 or torch.max(y_gt) <= 1.0) and is_train:
                 continue
 
             dataset['X'].append(x)  # [sample, len_x, k, 1]
@@ -277,20 +277,20 @@ def get_dataloader(args):
             or not os.path.exists(saved_val_path) or not os.path.exists(saved_test_path):
         train, val, test = train_test_split(X, args.dataset)
 
-        trainset = data_preprocessing(data=train, args=args, gen_times=10, scaler=None)
+        trainset = data_preprocessing(data=train, args=args, gen_times=10, scaler=None, is_train=True)
         train_scaler = trainset['Scaler']
         with open(saved_train_path, 'wb') as fp:
             pickle.dump(trainset, fp, protocol=pickle.HIGHEST_PROTOCOL)
             fp.close()
 
         print('Data preprocessing: VALSET')
-        valset = data_preprocessing(data=val, args=args, gen_times=10, scaler=train_scaler)
+        valset = data_preprocessing(data=val, args=args, gen_times=10, scaler=train_scaler, is_train=True)
         with open(saved_val_path, 'wb') as fp:
             pickle.dump(valset, fp, protocol=pickle.HIGHEST_PROTOCOL)
             fp.close()
 
         print('Data preprocessing: TESTSET')
-        testset = data_preprocessing(data=test, args=args, gen_times=1, scaler=train_scaler)
+        testset = data_preprocessing(data=test, args=args, gen_times=1, scaler=train_scaler, is_train=False)
 
         with open(saved_test_path, 'wb') as fp:
             pickle.dump(testset, fp, protocol=pickle.HIGHEST_PROTOCOL)
