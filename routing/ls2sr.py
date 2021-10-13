@@ -55,6 +55,15 @@ class LS2SRSolver:
 
         # data for selecting next link -> demand to be mutate
         self.link_selection_prob = None
+        self.flow_prob = {}
+        self.init_flow_prob()
+        self.util_change = True
+        self.selected_link_idx = 0
+        self.selected_flow_idx = 0
+        self.link_sort = None
+        self.flow_sort = None
+        self.last_selected_link = None
+        # self.utilizations = nx.get_edge_attributes(self.G, 'utilization')
 
     # -----------------------------------------------------------------------------------------------------------------
     def sort_paths(self, paths):
@@ -138,6 +147,10 @@ class LS2SRSolver:
             link2flow[(u, v)] = []
         return link2flow
 
+    def init_flow_prob(self):
+        for edge in self.G.edges:
+            self.flow_prob[edge] = None
+
     def compute_path(self):
         folder = os.path.join(self.args.datapath, 'topo/segments/ls2sr/')
         if not os.path.exists(folder):
@@ -189,22 +202,38 @@ class LS2SRSolver:
         # extract parameters
         # compute the prob
         demands = np.array([tm[i, j] for i, j in self.link2flow[(u, v)]])
-        return demands ** beta / np.sum(demands ** beta)
+        demands = demands ** beta / np.sum(demands ** beta)
+        sorted_demands_idx = np.argsort(demands)[::-1][:int(0.2 * (self.N ** 2))]
+        return sorted_demands_idx
 
     def select_flow(self, tm):
         # select link
-        self.set_link_selection_prob()
-        idx_sort = np.argsort(self.link_selection_prob)[-int(0.2 * len(self.indices_edge)):]
-        indices_edge = self.indices_edge[idx_sort]
-        index = np.random.choice(indices_edge)
-        link = list(self.G.edges)[index]
+        if self.util_change:
+            self.set_link_selection_prob()
+            self.link_sort = np.argsort(self.link_selection_prob)[-int(0.2 * len(self.indices_edge)):][::-1]
+            self.selected_link_idx = 0
+            link = list(self.G.edges)[self.link_sort[self.selected_link_idx]]
+            self.last_selected_link = link
+        else:
+            link = self.last_selected_link
 
         # select flow
-        flow_prob = self.set_flow_selection_prob(tm, link[0], link[1])
-        indices = np.arange(len(self.link2flow[link]))
+        if self.util_change or self.flow_prob[(link[0], link[1])] is None:
+            self.flow_prob[(link[0], link[1])] = self.set_flow_selection_prob(tm, link[0], link[1])
+            self.selected_flow_idx = 0
 
-        index = np.random.choice(indices, p=flow_prob)
-        flow = self.link2flow[link][index]
+        flow = self.link2flow[link][self.flow_prob[(link[0], link[1])][self.selected_flow_idx]]
+
+        if self.selected_flow_idx == len(self.flow_prob):
+            self.selected_flow_idx = 0
+            self.selected_link_idx += 1
+            if self.selected_link_idx == len(self.link_sort):
+                self.selected_link_idx = 0
+
+        else:
+            self.selected_flow_idx += 1
+
+        self.util_change = False
         return flow
 
     def set_link2flow(self, solution):
@@ -287,18 +316,26 @@ class LS2SRSolver:
         # iteratively solve
         tic = time.time()
         while time.time() - tic < self.timeout:
+            stime = time.time()
             i, j = self.select_flow(tm=tm)
+            # print('Time select flow: ', time.time()-stime)
             if i == j:
                 continue
+            stime = time.time()
             new_path_idx = best_solution[i, j] + 1
             if new_path_idx >= self.ub[i, j]:
                 new_path_idx = 0
 
             utilization = self.evaluate_fast(tm, new_path_idx, best_solution, i, j)
             mlu = max(utilization.values())
+            # print('Time evaluate fast: ', time.time()-stime)
             if theta - mlu >= eps:
+                stime = time.time()
                 self.update_link2flows(old_path_idx=best_solution[i, j], new_path_idx=new_path_idx, i=i, j=j)
                 self.apply_solution(utilization)  # updating utilization in Graph aka self.G
                 best_solution[i, j] = new_path_idx
                 theta = mlu
+                self.util_change = True
+                print('Time update new path: ', time.time() - stime)
+
         return best_solution
