@@ -1014,10 +1014,7 @@ def p2_heuristic_solver(solver, tm, gt_tms, p_solution, nNodes):
     gt_tms[:] = gt_tms[:] * (1.0 - np.eye(nNodes))
     tm = tm.reshape((nNodes, nNodes))
 
-    try:
-        solution = solver.solve(tm, solution=p_solution)  # solve backtrack solution (line 131)
-    except:
-        solution = solver.initialize()
+    solution = solver.solve(tm, solution=p_solution)  # solve backtrack solution (line 131)
 
     for i in range(gt_tms.shape[0]):
         u.append(solver.evaluate(solution, gt_tms[i]))
