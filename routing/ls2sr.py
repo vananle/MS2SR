@@ -57,7 +57,7 @@ class LS2SRSolver:
         self.link_selection_prob = None
         self.flow_prob = {}
         self.init_flow_prob()
-        self.util_change = True
+        self.updated_path = True
         self.selected_link_idx = 0
         self.selected_flow_idx = 0
         self.link_sort = None
@@ -149,7 +149,7 @@ class LS2SRSolver:
 
     def init_flow_prob(self):
         for edge in self.G.edges:
-            self.flow_prob[edge] = None
+            self.flow_prob[edge] = []
 
     def compute_path(self):
         folder = os.path.join(self.args.datapath, 'topo/segments/ls2sr/')
@@ -202,34 +202,30 @@ class LS2SRSolver:
         # extract parameters
         # compute the prob
         demands = np.array([tm[i, j] for i, j in self.link2flow[(u, v)]])
-        demands = demands ** beta / np.sum(demands ** beta)
-        sorted_demands_idx = np.argsort(demands)[::-1][:int(0.2 * len(demands))]
-        return sorted_demands_idx
+        return demands ** beta / np.sum(demands ** beta)
 
     def select_flow(self, tm):
         # select link
-        if self.util_change:
+        if self.updated_path:
             self.set_link_selection_prob()
-            self.link_sort = np.argsort(self.link_selection_prob)[-int(0.2 * len(self.indices_edge)):][::-1]
-            self.selected_link_idx = 0
+            # self.link_sort = np.argsort(self.link_selection_prob)[-int(0.2 * len(self.indices_edge)):][::-1]
 
-        link = self.list_edges[self.link_sort[self.selected_link_idx]]
+        idx = np.random.choice(self.indices_edge, size=1, p=self.link_selection_prob)
+        link = self.list_edges[idx[0]]
 
         # select flow
-        if self.util_change or self.flow_prob[(link[0], link[1])] is None:
-            self.flow_prob[(link[0], link[1])] = self.set_flow_selection_prob(tm, link[0], link[1])
-            self.selected_flow_idx = 0
-        else:
-            self.selected_flow_idx += 1
+        if self.updated_path or len(self.flow_prob[link]) == 0 or \
+                len(self.flow_prob[(link[0], link[1])]) != len(self.link2flow[(link[0], link[1])]):
+            self.flow_prob[link] = self.set_flow_selection_prob(tm, link[0], link[1])
 
-        if self.selected_flow_idx >= len(self.flow_prob[(link[0], link[1])]):
-            self.selected_flow_idx = 0
-            self.selected_link_idx += 1
-            if self.selected_link_idx == len(self.link_sort):
-                self.selected_link_idx = 0
-
-        flow = self.link2flow[link][self.flow_prob[(link[0], link[1])][self.selected_flow_idx]]
-        self.util_change = False
+        # assert len(self.flow_prob[(link[0], link[1])]) == len(self.link2flow[(link[0], link[1])])
+        try:
+            idx_flow = np.random.choice(np.arange(len(self.link2flow[link])), size=1,
+                                        p=self.flow_prob[link])
+            flow = self.link2flow[link][idx_flow[0]]
+        except:
+            print('ERROR')
+        self.updated_path = False
         return flow
 
     def set_link2flow(self, solution):
@@ -301,7 +297,7 @@ class LS2SRSolver:
         self.link_selection_prob = None
         self.flow_prob = {}
         self.init_flow_prob()
-        self.util_change = True
+        self.updated_path = True
         self.selected_link_idx = 0
         self.selected_flow_idx = 0
         self.link_sort = None
@@ -338,7 +334,7 @@ class LS2SRSolver:
                 self.apply_solution(utilization)  # updating utilization in Graph aka self.G
                 best_solution[i, j] = new_path_idx
                 theta = mlu
-                self.util_change = True
+                self.updated_path = True
 
         self.reset_state()
         return best_solution
