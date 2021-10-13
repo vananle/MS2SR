@@ -316,26 +316,20 @@ class LS2SRSolver:
         # iteratively solve
         tic = time.time()
         while time.time() - tic < self.timeout:
-            stime = time.time()
             i, j = self.select_flow(tm=tm)
-            # print('Time select flow: ', time.time()-stime)
             if i == j:
                 continue
-            stime = time.time()
             new_path_idx = best_solution[i, j] + 1
             if new_path_idx >= self.ub[i, j]:
                 new_path_idx = 0
 
             utilization = self.evaluate_fast(tm, new_path_idx, best_solution, i, j)
             mlu = max(utilization.values())
-            # print('Time evaluate fast: ', time.time()-stime)
             if theta - mlu >= eps:
-                stime = time.time()
                 self.update_link2flows(old_path_idx=best_solution[i, j], new_path_idx=new_path_idx, i=i, j=j)
                 self.apply_solution(utilization)  # updating utilization in Graph aka self.G
                 best_solution[i, j] = new_path_idx
                 theta = mlu
                 self.util_change = True
-                print('Time update new path: ', time.time() - stime)
 
         return best_solution
