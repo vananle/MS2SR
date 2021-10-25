@@ -208,23 +208,17 @@ class LS2SRSolver:
         # select link
         if self.updated_path:
             self.set_link_selection_prob()
-            # self.link_sort = np.argsort(self.link_selection_prob)[-int(0.2 * len(self.indices_edge)):][::-1]
 
         idx = np.random.choice(self.indices_edge, size=1, p=self.link_selection_prob)
         link = self.list_edges[idx[0]]
 
         # select flow
-        if self.updated_path or len(self.flow_prob[link]) == 0 or \
-                len(self.flow_prob[(link[0], link[1])]) != len(self.link2flow[(link[0], link[1])]):
+        if self.updated_path or len(self.flow_prob[link]) != len(self.link2flow[link]):
             self.flow_prob[link] = self.set_flow_selection_prob(tm, link[0], link[1])
 
-        # assert len(self.flow_prob[(link[0], link[1])]) == len(self.link2flow[(link[0], link[1])])
-        try:
-            idx_flow = np.random.choice(np.arange(len(self.link2flow[link])), size=1,
-                                        p=self.flow_prob[link])
-            flow = self.link2flow[link][idx_flow[0]]
-        except:
-            print('ERROR')
+        idx_flow = np.random.choice(np.arange(len(self.link2flow[link])), size=1,
+                                    p=self.flow_prob[link])
+        flow = self.link2flow[link][idx_flow[0]]
         self.updated_path = False
         return flow
 
