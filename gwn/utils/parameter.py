@@ -58,7 +58,7 @@ def get_args():
     parser.add_argument('--cat_feat_gc', action='store_true')
 
     # loss
-    parser.add_argument('--loss_fn', type=str, default='mae', choices=['mse', 'mae', 'mse_u', 'mae_u'])
+    parser.add_argument('--loss_fn', type=str, default='mse', choices=['mse', 'mae', 'mse_u', 'mae_u'])
     parser.add_argument('--lamda', type=float, default=2.0)
 
     # training
@@ -67,10 +67,10 @@ def get_args():
     parser.add_argument('--test_batch_size', type=int, default=1)
     parser.add_argument('--device', type=str, default='cuda:0')
 
-    parser.add_argument('--epochs', type=int, default=100, help='')
+    parser.add_argument('--epochs', type=int, default=300, help='')
     parser.add_argument('--clip', type=int, default=3, help='Gradient Clipping')
     parser.add_argument('--weight_decay', type=float, default=0.0001, help='weight decay rate')
-    parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate')
+    parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
     parser.add_argument('--lr_decay_rate', type=float, default=0.97, help='learning rate')
     parser.add_argument('--patience', type=int, default=20, help='quit if no improvement after this many iterations')
     parser.add_argument('--verbose', action='store_true')
