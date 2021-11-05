@@ -223,7 +223,7 @@ def remove_outliers(data):
 
 def train_test_split(X, dataset):
     if 'abilene' in dataset:
-        train_size = 3 * 7 * 288  # 3 weeks
+        train_size = 4 * 7 * 288  # 4 weeks
         val_size = 288 * 7  # 1 week
         test_size = 288 * 7 * 2  # 2 weeks
 
