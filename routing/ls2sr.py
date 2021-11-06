@@ -192,7 +192,7 @@ class LS2SRSolver:
             return True
         return False
 
-    def set_link_selection_prob(self, alpha=16):
+    def set_link_selection_prob(self, alpha=1):
         # compute the prob
         utilizations = nx.get_edge_attributes(self.G, 'utilization').values()
         utilizations = np.array(list(utilizations))
