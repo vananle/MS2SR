@@ -85,7 +85,7 @@ def get_args():
                                                        'gwn_cfr_topk'],
                         default='None')
 
-    parser.add_argument('--timeout', type=float, default=1.0)
+    parser.add_argument('--timeout', type=float, default=60.0)
     parser.add_argument('--te_step', type=int, default=0)
     parser.add_argument('--nrun', type=int, default=3)
 

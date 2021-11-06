@@ -298,7 +298,7 @@ class LS2SRSolver:
         self.flow_sort = None
         self.last_selected_link = None
 
-    def solve(self, tm, solution=None, eps=1e-8):
+    def solve(self, tm, solution=None, eps=1e-12):
 
         # initialize solution
         if solution is None:
