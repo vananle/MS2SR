@@ -618,7 +618,7 @@ def srls_p0(y_gt, graphs, te_step, args):
         # np.save(os.path.join(args.log_dir, 'TMs_gwn_srls'), TMs)
 
 
-def srls_fix_max(max_tm, y_gt, graphs, te_step, args):
+def srls_fix_max(max_tm, y_gt, graphs, te_step, args, set):
     print('srls_fix_max')
     G, nNodes, nEdges, capacity, sp = graphs
 
@@ -651,13 +651,13 @@ def srls_fix_max(max_tm, y_gt, graphs, te_step, args):
     TMs = np.stack(TMs, axis=0)
 
     LinkLoads = np.reshape(LinkLoads, newshape=(-1, LinkLoads.shape[2], LinkLoads.shape[3]))
-    RoutingMatrices = np.reshape(RoutingMatrices, newshape=(-1, RoutingMatrices.shape[2], RoutingMatrices.shape[3]))
+    RoutingMatrices = np.reshape(RoutingMatrices[0], newshape=(1, RoutingMatrices.shape[2], RoutingMatrices.shape[3]))
     TMs = np.reshape(TMs, newshape=(-1, TMs.shape[2]))
 
-    np.save(os.path.join(args.log_dir, 'LL_fix'), LinkLoads)
-    np.save(os.path.join(args.log_dir, 'As_fix'),
-            RoutingMatrices[0])
-    np.save(os.path.join(args.log_dir, 'TMs_fix'), TMs)
+    np.save(os.path.join(args.log_dir, 'LL_fix_{}'.format(set)), LinkLoads)
+    np.save(os.path.join(args.log_dir, 'As_fix_{}'.format(set)),
+            RoutingMatrices)
+    np.save(os.path.join(args.log_dir, 'TMs_fix_{}'.format(set)), TMs)
 
     print('LL shape: ', LinkLoads.shape)
     print('As shape: ', RoutingMatrices.shape)

@@ -116,7 +116,7 @@ def main(args, **model_kwargs):
             all_data = np.reshape(y_gt, newshape=(-1, y_gt.shape[-1]))
             max_tm = np.max(all_data, axis=0, keepdims=True)
 
-        srls_fix_max(max_tm, y_gt, graphs, te_step, args)
+        srls_fix_max(max_tm, y_gt, graphs, te_step, args, set)
 
 
 if __name__ == "__main__":
