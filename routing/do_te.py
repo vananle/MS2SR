@@ -650,10 +650,14 @@ def srls_fix_max(max_tm, y_gt, graphs, te_step, args):
     RoutingMatrices = np.stack(RoutingMatrices, axis=0)
     TMs = np.stack(TMs, axis=0)
 
-    np.save(os.path.join(args.log_dir, 'LinkLoads_srls_fix_max'), LinkLoads)
-    np.save(os.path.join(args.log_dir, 'RoutingMatrices_srls_fix_max'),
+    np.save(os.path.join(args.log_dir, 'LL_fix'), LinkLoads)
+    np.save(os.path.join(args.log_dir, 'As_fix'),
             RoutingMatrices)
-    np.save(os.path.join(args.log_dir, 'TMs_srls_fix_max'), TMs)
+    np.save(os.path.join(args.log_dir, 'TMs_fix'), TMs)
+
+    print('LL shape: ', LinkLoads.shape)
+    print('As shape: ', RoutingMatrices.shape)
+    print('TMs shape: ', TMs.shape)
 
 
 def gt_ls2sr(y_gt, graph, te_step, args):

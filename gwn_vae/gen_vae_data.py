@@ -48,7 +48,10 @@ def main(args, **model_kwargs):
     args.val_batch_size = 64
     args.device = 'cuda:0'
 
-    sets = ['train', 'val']
+    sets = ['train', 'val', 'test']
+    max_tm = None
+    graphs = createGraph_srls(os.path.join(args.datapath, 'topo/{}_node.csv'.format(args.dataset)),
+                              os.path.join(args.datapath, 'topo/{}_edge.csv'.format(args.dataset)))
     for set in sets:
         if set == 'train' or set == 'val':
             args.test = False
@@ -103,20 +106,17 @@ def main(args, **model_kwargs):
         yhat = None
 
         # run TE to generate training data
-        args.run_te = 'vae_gen_data'
-        print(' SET: {}'.format(set))
-        run_te(x_gt, y_gt, yhat, args)
+        # args.run_te = 'vae_gen_data'
+        # print(' SET: {}'.format(set))
+        # run_te(x_gt, y_gt, yhat, args)
 
         # fix routing
-        # te_step = x_gt.shape[0]
-        # if set == 'train':
-        #     y_gt_train = y_gt
-        # all_data = np.reshape(y_gt, newshape=(-1, y_gt_train.shape[-1]))
-        # max_tm = np.max(all_data, axis=0, keepdims=True)
-        #
-        # graphs = createGraph_srls(os.path.join(args.datapath, 'topo/{}_node.csv'.format(args.dataset)),
-        #                           os.path.join(args.datapath, 'topo/{}_edge.csv'.format(args.dataset)))
-        # srls_fix_max(max_tm, y_gt, graphs, te_step, args)
+        te_step = x_gt.shape[0]
+        if set == 'train':
+            all_data = np.reshape(y_gt, newshape=(-1, y_gt.shape[-1]))
+            max_tm = np.max(all_data, axis=0, keepdims=True)
+
+        srls_fix_max(max_tm, y_gt, graphs, te_step, args)
 
 
 if __name__ == "__main__":
