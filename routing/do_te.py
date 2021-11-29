@@ -654,7 +654,7 @@ def srls_fix_max(max_tm, y_gt, graphs, te_step, args, set):
     RoutingMatrices = np.reshape(RoutingMatrices, newshape=(-1, RoutingMatrices.shape[2], RoutingMatrices.shape[3]))
     TMs = np.reshape(TMs, newshape=(-1, TMs.shape[2]))
 
-    RoutingMatrices = np.reshape(RoutingMatrices[0], newshape=(1, RoutingMatrices.shape[2], RoutingMatrices.shape[3]))
+    RoutingMatrices = np.reshape(RoutingMatrices[0], newshape=(1, RoutingMatrices.shape[1], RoutingMatrices.shape[2]))
     np.save(os.path.join(args.log_dir, 'LL_fix_{}'.format(set)), LinkLoads)
     np.save(os.path.join(args.log_dir, 'As_fix_{}'.format(set)),
             RoutingMatrices)
